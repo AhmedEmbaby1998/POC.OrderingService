@@ -1,0 +1,101 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "4.1.0",
+      "isInstalled": true
+    },
+    "Volo.Abp.Account": {
+      "version": "9.1.0",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "9.1.0",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "9.1.0",
+      "isInstalled": true
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "9.1.0",
+      "isInstalled": true
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "9.1.0",
+      "isInstalled": true
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "9.1.0",
+      "isInstalled": true
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "9.1.0",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "POC.Application": {
+      "path": "src/POC.Application/POC.Application.abppkg",
+      "folder": "src"
+    },
+    "POC.Application.Tests": {
+      "path": "test/POC.Application.Tests/POC.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "POC.Domain.Shared": {
+      "path": "src/POC.Domain.Shared/POC.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "POC.Application.Contracts": {
+      "path": "src/POC.Application.Contracts/POC.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "POC.HttpApi": {
+      "path": "src/POC.HttpApi/POC.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "POC.HttpApi.Client": {
+      "path": "src/POC.HttpApi.Client/POC.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "POC.EntityFrameworkCore.Tests": {
+      "path": "test/POC.EntityFrameworkCore.Tests/POC.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "POC.EntityFrameworkCore": {
+      "path": "src/POC.EntityFrameworkCore/POC.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "POC.TestBase": {
+      "path": "test/POC.TestBase/POC.TestBase.abppkg",
+      "folder": "test"
+    },
+    "POC.Domain.Tests": {
+      "path": "test/POC.Domain.Tests/POC.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "POC.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/POC.HttpApi.Client.ConsoleTestApp/POC.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "POC.DbMigrator": {
+      "path": "src/POC.DbMigrator/POC.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "POC.HttpApi.Host": {
+      "path": "src/POC.HttpApi.Host/POC.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "POC.Domain": {
+      "path": "src/POC.Domain/POC.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
