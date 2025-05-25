@@ -20,7 +20,7 @@ namespace POC.Shared.ValueObjects
 
         public static Money operator + (Money a, Money b)
         {
-            if (a.Currency != b.Currency)
+            if (!a.Currency.Equals(b.Currency,StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new InvalidOperationException("Cannot add money with different currencies");
             }

@@ -35,7 +35,7 @@ namespace POC.Orders
 
         public void SetItems(IEnumerable<OrderItem> items)
         {
-            var e = new OrderCreatedEvent(this.Id, this.CustomerName, DateTime.Now, this.Address);
+            var e = new OrdeSetItemsEvent(this.Id,items);
             this.AddEvent(e);
             Apply(e);
         }
