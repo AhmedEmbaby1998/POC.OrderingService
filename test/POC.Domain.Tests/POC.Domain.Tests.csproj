@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\POC.Domain\POC.Domain.csproj" />
+    <ProjectReference Include="..\..\src\POC.Domain\POC.OrderingService.Domain.csproj" />
     <ProjectReference Include="..\POC.TestBase\POC.TestBase.csproj" />
   </ItemGroup>
 

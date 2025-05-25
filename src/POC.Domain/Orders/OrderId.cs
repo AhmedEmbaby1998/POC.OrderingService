@@ -23,5 +23,10 @@ namespace POC.Orders
             }
             return new OrderId(id);
         }
+
+        public static OrderId New()
+        {
+            return New(Guid.NewGuid());
+        }
     }
 }

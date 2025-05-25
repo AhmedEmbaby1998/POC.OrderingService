@@ -13,6 +13,7 @@ using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.BlobStoring.Database;
 using Volo.Abp.TenantManagement;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace POC;
 
@@ -55,6 +56,11 @@ public class POCDomainSharedModule : AbpModule
         Configure<AbpExceptionLocalizationOptions>(options =>
         {
             options.MapCodeNamespace("POC", typeof(POCResource));
+        });
+
+        context.Services.AddMediatR(config =>
+        {
+            config.RegisterServicesFromAssembly(typeof(POCDomainSharedModule).Assembly);
         });
     }
 }

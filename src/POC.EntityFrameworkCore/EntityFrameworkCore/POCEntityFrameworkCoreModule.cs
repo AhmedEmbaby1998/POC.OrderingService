@@ -14,6 +14,8 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
+using POC.Orders;
+using POC.Repositories.Orders;
 
 namespace POC.EntityFrameworkCore;
 
@@ -63,5 +65,6 @@ public class POCEntityFrameworkCoreModule : AbpModule
 
         });
         
+        context.Services.AddScoped<IOrderRepository,OrderRepository>();
     }
 }

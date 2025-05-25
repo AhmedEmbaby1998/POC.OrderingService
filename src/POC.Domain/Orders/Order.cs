@@ -17,9 +17,9 @@ namespace POC.Orders
         public Order()
         {
         }
-        public Order(string customerName, Address address)
+        public Order(OrderId id,string customerName, Address address)
         {
-            var e = new OrderCreatedEvent(OrderId.New(Guid.NewGuid()), customerName, DateTime.Now, address);
+            var e = new OrderCreatedEvent(id, customerName, DateTime.Now, address);
             this.AddEvent(e);
             Apply(e);
         }

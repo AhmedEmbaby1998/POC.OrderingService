@@ -12,7 +12,7 @@ namespace POC.Shared
     public abstract class EventSourcedAggregateRoot<TId> : FullAuditedAggregateRoot<TId>
     {
         private readonly List<object> _uncommittedEvents = new();
-        
+        public IReadOnlyList<object> UncommittedEvents => _uncommittedEvents.AsReadOnly();
 
         public void AddEvent(object @event)
         {

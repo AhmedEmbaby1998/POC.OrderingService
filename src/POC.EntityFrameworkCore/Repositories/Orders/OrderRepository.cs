@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using POC.EntityFrameworkCore;
@@ -22,19 +23,27 @@ namespace POC.Repositories.Orders
             _eventStore = eventStore;
         }
 
-        public Task<Order> GetAsync(OrderId id)
+        public async Task<Order> GetAsync(OrderId id)
         {
-            var history = _eventStore.GetEventsAsync(id);
+            var history =await _eventStore.GetEventsAsync(id);
             var order = new Order();
-            foreach (var @event in history.Result)
+            foreach (var @event in history)
             {
                 order.ApplyEvent(@event);
             }
+            return order;
         }
 
-        public Task SaveAsync(Order aggregate)
+        public async Task SaveAsync(Order aggregate,CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var events = aggregate.UncommittedEvents.Select(e => new StoredEvent
+            {
+                AggregateId = aggregate.Id.ToString(),
+                EventType = e.GetType().FullName,
+                EventData = JsonSerializer.Serialize(e),
+                CreatedAt = DateTime.UtcNow
+            });
+            await _eventStore.SaveEventAsync(events, cancellationToken);
         }
     }
 }

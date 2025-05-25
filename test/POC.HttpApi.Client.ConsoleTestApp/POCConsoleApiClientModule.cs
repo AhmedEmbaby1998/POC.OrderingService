@@ -10,7 +10,6 @@ namespace POC.HttpApi.Client.ConsoleTestApp;
 
 [DependsOn(
     typeof(AbpAutofacModule),
-    typeof(POCHttpApiClientModule),
     typeof(AbpHttpClientIdentityModelModule)
     )]
 public class POCConsoleApiClientModule : AbpModule

@@ -16,12 +16,10 @@ namespace POC.EntitiesConfiguration
             builder.ConfigureByConvention(); //auto configure for the base class props
             builder.ToTable("StoredEvents");
             builder.HasKey(x => x.Id);
-            builder.Property(a=>a.EventType).IsRequired()
-                .HasMaxLength(200);
+            builder.Property(a => a.EventType).IsRequired();
             builder.Property(a => a.EventData).IsRequired();
             builder.Property(a => a.CreatedAt).IsRequired();
-            builder.Property(a => a.AggregateId).IsRequired()
-                .HasMaxLength(50);
+            builder.Property(a => a.AggregateId).IsRequired();
         }
     }
 }

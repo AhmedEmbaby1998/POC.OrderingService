@@ -66,7 +66,7 @@ public class POCDomainModule : AbpModule
             options.Languages.Add(new LanguageInfo("sv", "sv", "Svenska"));
         });
 
-        context.Services.AddScoped<IEventStore, IEventStore>();
+        context.Services.AddScoped<IEventStore, EfEventStore>();
 
 #if DEBUG
         context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());

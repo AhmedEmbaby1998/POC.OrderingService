@@ -56,9 +56,7 @@ public class POCDbContext :
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
-    public DbSet<Order> Orders { get; set; }
     public DbSet<StoredEvent> StoredEvents { get; set; }
-    public DbSet<Invoice> Invoices { get; set; }
 
 
     #endregion

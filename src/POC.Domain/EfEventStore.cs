@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Json;
@@ -18,9 +19,9 @@ namespace POC
             _jsonSerializer = jsonSerializer;
         }
 
-        public void SaveEventAsync(IEnumerable<StoredEvent> storedEvents)
+        public async Task SaveEventAsync(IEnumerable<StoredEvent> storedEvents,CancellationToken cancellationToken)
         {
-            _repository.InsertManyAsync(storedEvents);
+            await _repository.InsertManyAsync(storedEvents,false,cancellationToken);
         }
         public async Task<IEnumerable<StoredEvent>> GetEventsAsync(Guid aggregateId)
         {

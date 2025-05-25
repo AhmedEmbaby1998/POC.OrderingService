@@ -21,11 +21,18 @@ namespace POC.Orders
             Price = price;
         }
 
+        public OrderItem(Guid productName, Quantity quantity)
+        {
+            ProductName1 = productName;
+            Quantity = quantity;
+        }
+
         public Order Order {private set;get; }
         public OrderId OrderId { get;private set; }
         public string ProductName { get;private set; }
         public Quantity Quantity { get;private set; }
         public Money Price { get; private set; }
+        public Guid ProductName1 { get; }
 
         protected override IEnumerable<object> GetAtomicValues()
         {
