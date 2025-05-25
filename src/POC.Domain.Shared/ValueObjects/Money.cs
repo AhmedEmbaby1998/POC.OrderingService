@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Values;
 
@@ -12,6 +13,8 @@ namespace POC.Shared.ValueObjects
         public static readonly Money Zero = new(0, "USD");
         public decimal Amount { get;private set; }
         public string Currency { get;private set; }
+
+        [JsonConstructor]
         public Money(decimal amount, string currency)
         {
             Amount = amount;

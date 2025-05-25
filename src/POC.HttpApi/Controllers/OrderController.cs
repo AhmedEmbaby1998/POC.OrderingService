@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using POC.Orders.Commands;
+using POC.Orders.Query;
 using Volo.Abp.AspNetCore.Mvc;
 
 namespace POC.Controllers
@@ -30,6 +31,20 @@ namespace POC.Controllers
                 return Ok(result);
             }
             catch(Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            try
+            {
+                OrderDto result = await _meditor.Send(new GetOrderByIdQuery(id));
+                return Ok(result);
+            }
+            catch (Exception e)
             {
                 return BadRequest(e);
             }

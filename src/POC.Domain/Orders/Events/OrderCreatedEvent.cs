@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using POC.Shared.ValueObjects;
 
@@ -9,7 +10,8 @@ namespace POC.Orders.Events
 {
     public record OrderCreatedEvent
     {
-        public OrderCreatedEvent(OrderId orderId, string customerName, DateTime orderDate,Address address)
+        [JsonConstructor]
+        public OrderCreatedEvent(OrderId orderId, string customerName, DateTime orderDate)
         {
             OrderId = orderId;
             CustomerName = customerName;
@@ -17,7 +19,6 @@ namespace POC.Orders.Events
         }
 
         public OrderId OrderId { get; }
-        public Address ShippingAddress { get; }
         public string CustomerName { get; }
         public DateTime OrderDate { get; }
     }

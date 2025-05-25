@@ -8,7 +8,7 @@ using MediatR;
 using POC.Orders;
 using POC.Orders.Commands;
 
-namespace POC.Features.Orders.Commands
+namespace POC.Features.Orders.CommandHandlers
 {
     internal class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Guid>
     {
@@ -21,8 +21,8 @@ namespace POC.Features.Orders.Commands
 
         public async Task<Guid> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = new Order(OrderId.New(),request.CustomerName, request.Address);
-            order.SetItems(request.OrderItems.Select(d=>new POC.Orders.OrderItem(d.ProductName,d.Quantity,d.Money)));
+            var order = new Order(OrderId.New(), request.CustomerName, request.Address);
+            order.SetItems(request.OrderItems.Select(d => new POC.Orders.OrderItem(d.ProductName, d.Quantity, d.Money)));
             await _orderRepository.SaveAsync(order, cancellationToken);
             return order.Id;
         }

@@ -23,9 +23,9 @@ namespace POC
         {
             await _repository.InsertManyAsync(storedEvents,false,cancellationToken);
         }
-        public async Task<IEnumerable<StoredEvent>> GetEventsAsync(Guid aggregateId)
+        public async Task<IEnumerable<StoredEvent>> GetEventsAsync(string aggregateId)
         {
-            return await _repository.GetListAsync(e => e.AggregateId == aggregateId.ToString());
+            return await _repository.GetListAsync(e => e.AggregateId == aggregateId);
         }
     }
 }

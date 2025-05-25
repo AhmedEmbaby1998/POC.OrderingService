@@ -9,7 +9,7 @@ namespace POC
 {
     public interface IEventStore
     {
-        Task<IEnumerable<StoredEvent>> GetEventsAsync(Guid aggregateId);
+        Task<IEnumerable<StoredEvent>> GetEventsAsync(string aggregateId);
         Task SaveEventAsync(IEnumerable<StoredEvent> storedEvents,CancellationToken cancellationToken);
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Values;
 
@@ -14,6 +15,7 @@ namespace POC.Shared.ValueObjects
         public string State { get; private set; }
         public string ZipCode { get; private set; }
 
+        [JsonConstructor]
         public Address(string street, string city, string state, string zipCode)
         {
             Street = street;

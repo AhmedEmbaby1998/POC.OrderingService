@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using POC.Shared.ValueObjects;
 using Volo.Abp.Domain.Entities.Auditing;
@@ -14,6 +15,7 @@ namespace POC.Orders
         private OrderItem()
         {
         }
+        [JsonConstructor]
         public OrderItem(string productName, Quantity quantity, Money price)
         {
             ProductName = productName;
