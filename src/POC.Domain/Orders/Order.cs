@@ -14,14 +14,20 @@ namespace POC.Orders
 {
     public class Order : EventSourcedAggregateRoot<OrderId>
     {
-        public Order()
+        private Order()
         {
         }
-        public Order(OrderId id,string customerName, Address address)
+
+        private Order(OrderId id,string customerName, Address address)
         {
             var e = new OrderCreatedEvent(id, customerName, DateTime.Now);
             this.AddEvent(e);
             Apply(e);
+        }
+
+        public static Order Create(OrderId id, string customerName, Address address)
+        {
+            return new Order(id, customerName, address);
         }
 
         public string CustomerName { get;private set; }
@@ -64,12 +70,19 @@ namespace POC.Orders
             this.TotalPrice = Money.Zero;
         }
 
-        public void ApplyEvent(StoredEvent @event)
+        public static Order ApplyEvent(IEnumerable<StoredEvent> @event)
         {
-            var eventType = Type.GetType(@event.EventType);
-            var domainEvent = JsonSerializer.Deserialize(@event.EventData, eventType);
+            var order = new Order();
+            foreach (var e in @event)
+            {
+                var eventType = Type.GetType(e.EventType);
+                var domainEvent = JsonSerializer.Deserialize(e.EventData, eventType);
 
-            ((dynamic)this).Apply((dynamic)domainEvent);
+                ((dynamic)order).Apply((dynamic)domainEvent);
+            }
+            return order;
         }
+
+
     }
 }

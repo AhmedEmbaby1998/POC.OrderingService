@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "POC.OrderingService.Query": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

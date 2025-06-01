@@ -26,11 +26,7 @@ namespace POC.Repositories.Orders
         public async Task<Order> GetAsync(OrderId id)
         {
             var history =await _eventStore.GetEventsAsync(id);
-            var order = new Order();
-            foreach (var @event in history)
-            {
-                order.ApplyEvent(@event);
-            }
+            var order = Order.ApplyEvent(history);
             return order;
         }
 

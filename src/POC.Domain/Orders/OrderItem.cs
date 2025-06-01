@@ -5,12 +5,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using POC.Shared.ValueObjects;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Domain.Values;
 
 namespace POC.Orders
 {
-    public class OrderItem :ValueObject
+    public class OrderItem :AuditedEntity<Guid>
     {
         private OrderItem()
         {

@@ -16,6 +16,7 @@ namespace POC.Shared
 
         public void AddEvent(object @event)
         {
+            AddLocalEvent(@event);
             _uncommittedEvents.Add(@event);
         }
 
