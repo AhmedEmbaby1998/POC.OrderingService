@@ -21,7 +21,7 @@ namespace POC.Features.Orders.CommandHandlers
 
         public async Task<Guid> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = new Order(OrderId.New(), request.CustomerName, request.Address);
+            var order = Order.Create(OrderId.New(), request.CustomerName, request.Address);
             order.SetItems(request.OrderItems.Select(d => new POC.Orders.OrderItem(d.ProductName, d.Quantity, d.Money)));
             await _orderRepository.SaveAsync(order, cancellationToken);
             return order.Id;

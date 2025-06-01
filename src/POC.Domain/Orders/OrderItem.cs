@@ -24,9 +24,9 @@ namespace POC.Orders
             Price = price;
         }
 
-        public OrderItem(Guid productName, Quantity quantity)
+        public OrderItem(string productName, Quantity quantity)
         {
-            ProductName1 = productName;
+            ProductName = productName;
             Quantity = quantity;
         }
 
@@ -35,15 +35,8 @@ namespace POC.Orders
         public string ProductName { get;private set; }
         public Quantity Quantity { get;private set; }
         public Money Price { get; private set; }
-        public Guid ProductName1 { get; }
 
-        protected override IEnumerable<object> GetAtomicValues()
-        {
-            yield return ProductName;
-            yield return Quantity;
-            yield return Price;
-            yield return OrderId;
-        }
+
     }
 
 }

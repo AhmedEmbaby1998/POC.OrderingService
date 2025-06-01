@@ -1938,7 +1938,7 @@ namespace POC.Migrations
 
                             b1.HasKey("InvoiceId");
 
-                            b1.ToTable("Invoices");
+                            b1.ToTable("Invoices", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("InvoiceId");

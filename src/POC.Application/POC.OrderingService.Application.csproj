@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\POC.OrderingService.Query.Abstraction\POC.OrderingService.Query.Abstraction.csproj" />
     <ProjectReference Include="..\POC.Domain\POC.OrderingService.Domain.csproj" />
     <ProjectReference Include="..\POC.Application.Contracts\POC.OrderingService.Application.Contracts.csproj" />
   </ItemGroup>

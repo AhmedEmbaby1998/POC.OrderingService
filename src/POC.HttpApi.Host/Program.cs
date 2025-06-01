@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using POC.OrderingService.Query;
 using Serilog;
 using Serilog.Events;
 
@@ -40,6 +41,7 @@ public class Program
                         .WriteTo.Async(c => c.AbpStudio(services));
                 });
             await builder.AddApplicationAsync<POCHttpApiHostModule>();
+            builder.Services.RegisterQueryServices(builder.Services.GetConfiguration());
             var app = builder.Build();
             await app.InitializeApplicationAsync();
             await app.RunAsync();

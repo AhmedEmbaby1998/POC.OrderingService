@@ -20,7 +20,7 @@ public class POCDbContextFactory : IDesignTimeDbContextFactory<POCDbContext>
         POCEfCoreEntityExtensionMappings.Configure();
 
         var builder = new DbContextOptionsBuilder<POCDbContext>()
-            .UseNpgsql(configuration.GetConnectionString("Default"));
+            .UseNpgsql(configuration.GetConnectionString("Write"));
         
         return new POCDbContext(builder.Options);
     }

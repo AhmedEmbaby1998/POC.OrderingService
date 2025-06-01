@@ -37,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\POC.OrderingService.Query\POC.OrderingService.Query.csproj" />
     <ProjectReference Include="..\POC.Application\POC.OrderingService.Application.csproj" />
     <ProjectReference Include="..\POC.HttpApi\POC.OrderingService.HttpApi.csproj" />
     <ProjectReference Include="..\POC.EntityFrameworkCore\POC.OrderingService.EntityFrameworkCore.csproj" />
