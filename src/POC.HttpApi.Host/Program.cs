@@ -41,7 +41,6 @@ public class Program
                         .WriteTo.Async(c => c.AbpStudio(services));
                 });
             await builder.AddApplicationAsync<POCHttpApiHostModule>();
-            builder.Services.RegisterQueryServices(builder.Services.GetConfiguration());
             var app = builder.Build();
             await app.InitializeApplicationAsync();
             await app.RunAsync();
