@@ -39,6 +39,7 @@ using Volo.Abp.OpenIddict;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Security.Claims;
+using POC.OrderingService.Query;
 
 namespace POC;
 
@@ -52,7 +53,8 @@ namespace POC;
     typeof(POCEntityFrameworkCoreModule),
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
-    typeof(AbpAspNetCoreSerilogModule)
+    typeof(AbpAspNetCoreSerilogModule),
+    typeof(OrderingServiceQueryModule)
     )]
 public class POCHttpApiHostModule : AbpModule
 {

@@ -11,26 +11,28 @@ using Microsoft.Extensions.DependencyInjection;
 using POC.OrderingService.Query.Abstraction.Repositories;
 using POC.OrderingService.Query.Data;
 using POC.OrderingService.Query.Repositories;
-using Polly;
+using Volo.Abp.Modularity;
 
 namespace POC.OrderingService.Query
 {
-    public static class IOC
+    public class OrderingServiceQueryModule : AbpModule
     {
-        public static void RegisterQueryServices(this IServiceCollection services,IConfiguration configuration)
+        public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            services.AddDbContext<ReadModelDBContext>(options =>
-               options.UseNpgsql(configuration.GetConnectionString("Read")));
+            context.Services.AddDbContext<ReadModelDBContext>(options =>
+                           options.UseNpgsql(context.Configuration.GetConnectionString("Read")));
 
-            services.AddScoped<IDbConnection>(provider =>
+            context.Services.AddScoped<IDbConnection>(provider =>
             {
-                var connectionString =configuration.GetConnectionString("DefaultConnection");
+                var connectionString = context.Configuration.GetConnectionString("Read");
 
                 return new ResilientDbConnection(new SqlConnection(connectionString));
             });
 
             // Register repositories
-            services.AddScoped<IOrderReadModelRepository, OrderReadModelRepository>();
+            context.Services.AddScoped<IOrderReadModelRepository, OrderReadModelRepository>();
         }
+
     }
+      
 }
