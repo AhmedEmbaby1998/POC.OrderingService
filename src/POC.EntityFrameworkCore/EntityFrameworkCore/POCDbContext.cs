@@ -16,6 +16,7 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using POC.Orders;
 using POC.Invoices;
+using Volo.Abp.EntityFrameworkCore.DistributedEvents;
 
 namespace POC.EntityFrameworkCore;
 
@@ -24,6 +25,7 @@ namespace POC.EntityFrameworkCore;
 [ConnectionStringName("Default")]
 public class POCDbContext :
     AbpDbContext<POCDbContext>,
+    IHasEventOutbox,
     ITenantManagementDbContext,
     IIdentityDbContext
 {
@@ -57,6 +59,7 @@ public class POCDbContext :
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
     public DbSet<StoredEvent> StoredEvents { get; set; }
+    public DbSet<OutgoingEventRecord> OutgoingEvents { set; get; }
 
 
     #endregion
