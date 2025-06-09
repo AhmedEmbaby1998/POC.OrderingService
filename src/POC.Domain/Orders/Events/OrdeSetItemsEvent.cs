@@ -4,16 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using POC.Abstractions;
 
 namespace POC.Orders.Events
 {
-    public record OrdeSetItemsEvent
+    public record OrdeSetItemsEvent : EventSourcedEvent
     {
         public OrderId OrderId { get; }
         public IEnumerable<OrderItem> Items { get; }
 
         [JsonConstructor]
         public OrdeSetItemsEvent(OrderId orderId, IEnumerable<OrderItem> items)
+            :base(orderId)
         {
             OrderId = orderId;
             Items = items;

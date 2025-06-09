@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using POC.Shared;
+using POC.Abstractions;
 using Volo.Abp.Domain.Repositories;
 
 namespace POC.Orders

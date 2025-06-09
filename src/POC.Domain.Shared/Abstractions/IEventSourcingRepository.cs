@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 using Volo.Abp.Domain.Entities;
 
-namespace POC.Shared
+namespace POC.Abstractions
 {
-    public interface IEventSourcingRepository<TAggregate,TId> where TAggregate : IAggregateRoot<TId>
+    public interface IEventSourcingRepository<TAggregate, TId> where TAggregate : IAggregateRoot<TId>
     {
         public Task<TAggregate> GetAsync(TId id);
-        public Task SaveAsync(TAggregate aggregate,CancellationToken cancellationToken);
+        public Task SaveAsync(TAggregate aggregate, CancellationToken cancellationToken);
     }
 }

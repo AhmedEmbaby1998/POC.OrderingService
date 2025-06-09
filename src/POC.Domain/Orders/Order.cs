@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using POC.Abstractions;
 using POC.Orders.Events;
 using POC.Orders.Exceptions;
-using POC.Shared;
 using POC.Shared.ValueObjects;
 using Volo.Abp.Domain.Entities.Auditing;
 
 namespace POC.Orders
 {
-    public class Order : EventSourcedAggregateRoot<OrderId>
+    public class Order : EventSourcingAggregateRoot<OrderId>
     {
         private Order()
         {
@@ -21,7 +21,7 @@ namespace POC.Orders
         private Order(OrderId id,string customerName, Address address)
         {
             var e = new OrderCreatedEvent(id, customerName, DateTime.Now);
-            this.AddEvent(e);
+            this.RaiseEventSourcedEvent(e);
             Apply(e);
         }
 
@@ -42,10 +42,33 @@ namespace POC.Orders
         public void SetItems(IEnumerable<OrderItem> items)
         {
             var e = new OrdeSetItemsEvent(this.Id,items);
-            this.AddEvent(e);
+            RaiseEventSourcedEvent(e);
             Apply(e);
+            AddLocalEvent(e);
         }
-        public void Apply(OrdeSetItemsEvent @event)
+
+        public void Pay(Money amount)
+        {
+            var e = new OrderPaidEvent(this.Id,CustomerName,amount);
+            this.RaiseEventSourcedEvent(e);
+            Apply(e);
+            AddLocalEvent(e);
+        }
+
+        private void Apply(OrderPaidEvent e)
+        {
+            if (DeliveryDate is { })
+            {
+                throw new CanNotModifyDeliveredOrder(this.Id);
+            }
+            if (e.TotalPrice < this.TotalPrice)
+            {
+                throw new NotEnoughMoneyToPayOrder(this.Id, e.TotalPrice, this.TotalPrice);
+            }
+            this.DeliveryDate = DateOnly.FromDateTime(DateTime.Now.AddDays(3));
+        }
+
+        private void Apply(OrdeSetItemsEvent @event)
         {
             if (DeliveryDate is { })
             {
@@ -62,7 +85,7 @@ namespace POC.Orders
             }
         }
 
-        public void Apply(OrderCreatedEvent orderCreatedEvent)
+        private void Apply(OrderCreatedEvent orderCreatedEvent)
         {
             this.Id = orderCreatedEvent.OrderId;
             this.CustomerName = orderCreatedEvent.CustomerName;
@@ -70,7 +93,7 @@ namespace POC.Orders
             this.TotalPrice = Money.Zero;
         }
 
-        public static Order ApplyEvent(IEnumerable<StoredEvent> @event)
+        public static Order Rehydrate(IEnumerable<StoredEvent> @event)
         {
             var order = new Order();
             foreach (var e in @event)

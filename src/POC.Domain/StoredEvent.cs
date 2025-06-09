@@ -9,9 +9,17 @@ namespace POC
 {
     public class StoredEvent :Entity<Guid>
     {
-        public string EventType { get; set; }
-        public string EventData { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string AggregateId { get; set; }
+        public StoredEvent(string eventType, string eventData, DateTimeOffset createdAt, string aggregateId)
+        {
+            EventType = eventType;
+            EventData = eventData;
+            CreatedAt = createdAt;
+            AggregateId = aggregateId;
+        }
+
+        public string EventType { get;private set; }
+        public string EventData { get;private set; }
+        public DateTimeOffset CreatedAt { get;private set; }
+        public string AggregateId { get;private set; }
     }
 }

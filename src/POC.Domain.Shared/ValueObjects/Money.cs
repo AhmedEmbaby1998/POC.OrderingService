@@ -40,9 +40,47 @@ namespace POC.Shared.ValueObjects
 
             return new Money(a.Amount - b.Amount, a.Currency);
         }
+
+        private static decimal CompareTo(Money a, Money b)
+        {
+            if (a.Currency != b.Currency)
+            {
+                throw new InvalidOperationException("Cannot compare money with different currencies");
+            }
+            return a.Amount - b.Amount;
+        }
+        public static bool operator >(Money a, Money b)
+        {
+            return CompareTo(a, b) > 0;
+        }
+
+        public static bool operator >=(Money a, Money b)
+        {
+            return CompareTo(a, b) >= 0;
+        }
+        public static bool operator <(Money a, Money b)
+        {
+            return CompareTo(a, b) < 0;
+        }
+
+        public static bool operator <=(Money a, Money b)
+        {
+            return CompareTo(a, b) <= 0;
+        }
+
         public override string ToString()
         {
             return $"{Amount} {Currency}";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Money other)
+            {
+                return CompareTo(this, other) == 0;
+            }
+
+            return false;
         }
 
         protected override IEnumerable<object> GetAtomicValues()

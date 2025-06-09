@@ -26,19 +26,19 @@ namespace POC.Repositories.Orders
         public async Task<Order> GetAsync(OrderId id)
         {
             var history =await _eventStore.GetEventsAsync(id);
-            var order = Order.ApplyEvent(history);
+            var order = Order.Rehydrate(history);
             return order;
         }
 
         public async Task SaveAsync(Order aggregate,CancellationToken cancellationToken)
         {
             var events = aggregate.UncommittedEvents.Select(e => new StoredEvent
-            {
-                AggregateId = aggregate.Id.ToString(),
-                EventType = e.GetType().FullName,
-                EventData = JsonSerializer.Serialize(e),
-                CreatedAt = DateTime.UtcNow
-            });
+            (
+                eventType: e.GetType()?.FullName,
+                eventData: JsonSerializer.Serialize(e),
+                createdAt: e.OccurredOn,
+                aggregateId: e.AggregateId.ToString())
+            );
             await _eventStore.SaveEventAsync(events, cancellationToken);
         }
     }
