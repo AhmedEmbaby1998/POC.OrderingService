@@ -36,4 +36,8 @@
     <Content Remove="Localization\POC\*.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Enums\" />
+  </ItemGroup>
+
 </Project>

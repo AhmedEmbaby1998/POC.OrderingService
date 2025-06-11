@@ -12,16 +12,13 @@ public class POCDbContextFactory : IDesignTimeDbContextFactory<POCDbContext>
 {
     public POCDbContext CreateDbContext(string[] args)
     {
-        // https://www.npgsql.org/efcore/release-notes/6.0.html#opting-out-of-the-new-timestamp-mapping-logic
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-        
         var configuration = BuildConfiguration();
-        
+
         POCEfCoreEntityExtensionMappings.Configure();
 
         var builder = new DbContextOptionsBuilder<POCDbContext>()
-            .UseNpgsql(configuration.GetConnectionString("Write"));
-        
+            .UseSqlServer(configuration.GetConnectionString("Write"));
+
         return new POCDbContext(builder.Options);
     }
 

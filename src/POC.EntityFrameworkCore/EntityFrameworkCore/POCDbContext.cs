@@ -22,7 +22,7 @@ namespace POC.EntityFrameworkCore;
 
 [ReplaceDbContext(typeof(IIdentityDbContext))]
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
-[ConnectionStringName("Default")]
+[ConnectionStringName("Write")]
 public class POCDbContext :
     AbpDbContext<POCDbContext>,
     IHasEventOutbox,

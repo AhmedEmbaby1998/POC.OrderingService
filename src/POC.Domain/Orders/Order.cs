@@ -5,10 +5,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using POC.Abstractions;
-using POC.Orders.Events;
+using POC.Orders.Events.EventsSourced;
 using POC.Orders.Exceptions;
+using POC.Orders.Factories;
 using POC.Shared.ValueObjects;
-using Volo.Abp.Domain.Entities.Auditing;
 
 namespace POC.Orders
 {
@@ -20,9 +20,10 @@ namespace POC.Orders
 
         private Order(OrderId id,string customerName, Address address)
         {
-            var e = new OrderCreatedEvent(id, customerName, DateTime.Now);
+            var e = new OrderCreatedEventSourced(id, customerName, DateTime.Now);
             this.RaiseEventSourcedEvent(e);
             Apply(e);
+            this.AddLocalEvent(this.ToOrderCreatedEvent());
         }
 
         public static Order Create(OrderId id, string customerName, Address address)
@@ -41,7 +42,7 @@ namespace POC.Orders
 
         public void SetItems(IEnumerable<OrderItem> items)
         {
-            var e = new OrdeSetItemsEvent(this.Id,items);
+            var e = new OrdeSetItemsEventSourced(this.Id,items);
             RaiseEventSourcedEvent(e);
             Apply(e);
             AddLocalEvent(e);
@@ -49,13 +50,13 @@ namespace POC.Orders
 
         public void Pay(Money amount)
         {
-            var e = new OrderPaidEvent(this.Id,CustomerName,amount);
+            var e = new OrderPaidEventSourced(this.Id,CustomerName,amount);
             this.RaiseEventSourcedEvent(e);
             Apply(e);
-            AddLocalEvent(e);
+            this.AddLocalEvent(this.ToOrderPaidEvent());
         }
 
-        private void Apply(OrderPaidEvent e)
+        private void Apply(OrderPaidEventSourced e)
         {
             if (DeliveryDate is { })
             {
@@ -68,7 +69,7 @@ namespace POC.Orders
             this.DeliveryDate = DateOnly.FromDateTime(DateTime.Now.AddDays(3));
         }
 
-        private void Apply(OrdeSetItemsEvent @event)
+        private void Apply(OrdeSetItemsEventSourced @event)
         {
             if (DeliveryDate is { })
             {
@@ -85,7 +86,7 @@ namespace POC.Orders
             }
         }
 
-        private void Apply(OrderCreatedEvent orderCreatedEvent)
+        private void Apply(OrderCreatedEventSourced orderCreatedEvent)
         {
             this.Id = orderCreatedEvent.OrderId;
             this.CustomerName = orderCreatedEvent.CustomerName;

@@ -4,7 +4,6 @@ using Volo.Abp.Uow;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
-using Volo.Abp.EntityFrameworkCore.PostgreSql;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity.EntityFrameworkCore;
 using Volo.Abp.OpenIddict.EntityFrameworkCore;
@@ -16,6 +15,7 @@ using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Volo.Abp.Studio;
 using POC.Orders;
 using POC.Repositories.Orders;
+using Volo.Abp.EntityFrameworkCore.SqlServer;
 
 namespace POC.EntityFrameworkCore;
 
@@ -23,7 +23,7 @@ namespace POC.EntityFrameworkCore;
     typeof(POCDomainModule),
     typeof(AbpPermissionManagementEntityFrameworkCoreModule),
     typeof(AbpSettingManagementEntityFrameworkCoreModule),
-    typeof(AbpEntityFrameworkCorePostgreSqlModule),
+    typeof(AbpEntityFrameworkCoreSqlServerModule),
     typeof(AbpBackgroundJobsEntityFrameworkCoreModule),
     typeof(AbpAuditLoggingEntityFrameworkCoreModule),
     typeof(AbpFeatureManagementEntityFrameworkCoreModule),
@@ -61,7 +61,7 @@ public class POCEntityFrameworkCoreModule : AbpModule
             /* The main point to change your DBMS.
              * See also POCDbContextFactory for EF Core tooling. */
 
-            options.UseNpgsql();
+            options.UseSqlServer();
 
         });
         

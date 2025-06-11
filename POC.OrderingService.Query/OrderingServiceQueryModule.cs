@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using POC.OrderingService.Query.Abstraction.Repositories;
 using POC.OrderingService.Query.Data;
 using POC.OrderingService.Query.Repositories;
+using Serilog;
 using Volo.Abp.Modularity;
 
 namespace POC.OrderingService.Query
@@ -19,18 +20,20 @@ namespace POC.OrderingService.Query
     {
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
+            Log.Information("Configuring OrderingServiceQueryModule...");
+            var connectionString = context.Configuration.GetConnectionString("Read");
+            Log.Information("Using connection string: {ConnectionString}", connectionString);
             context.Services.AddDbContext<ReadModelDBContext>(options =>
-                           options.UseNpgsql(context.Configuration.GetConnectionString("Read")));
-
+                           options.UseSqlServer(connectionString));
+            Log.Information("ReadModelDBContext configured with SQL Server.");
             context.Services.AddScoped<IDbConnection>(provider =>
             {
-                var connectionString = context.Configuration.GetConnectionString("Read");
-
                 return new ResilientDbConnection(new SqlConnection(connectionString));
             });
-
+            Log.Information("ResilientDbConnection registered with SQL Server connection.");
             // Register repositories
             context.Services.AddScoped<IOrderReadModelRepository, OrderReadModelRepository>();
+            Log.Information("OrderReadModelRepository registered.");
         }
 
     }

@@ -6,16 +6,16 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using POC.Abstractions;
 
-namespace POC.Orders.Events
+namespace POC.Orders.Events.EventsSourced
 {
-    public record OrdeSetItemsEvent : EventSourcedEvent
+    public record OrdeSetItemsEventSourced : EventSourcedEvent
     {
         public OrderId OrderId { get; }
         public IEnumerable<OrderItem> Items { get; }
 
         [JsonConstructor]
-        public OrdeSetItemsEvent(OrderId orderId, IEnumerable<OrderItem> items)
-            :base(orderId)
+        public OrdeSetItemsEventSourced(OrderId orderId, IEnumerable<OrderItem> items)
+            : base(orderId)
         {
             OrderId = orderId;
             Items = items;

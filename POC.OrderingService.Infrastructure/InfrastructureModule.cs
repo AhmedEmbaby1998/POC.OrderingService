@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MassTransit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using POC.OrderingService.Infrastructure.ActiveMq;
 using Volo.Abp;
@@ -20,12 +21,18 @@ namespace POC.OrderingService.Infrastructure
             var configuration = context.Services.GetConfiguration();
             Configure<ActiveMQSettings>(
                 context.Services.GetConfiguration().GetSection("ActiveMQ")
-            ); 
-            context.Services.AddMassTransit(x =>
+            );
+            context.Services.AddMassTransit(ActiveMqConfig(configuration));
+            context.Services.AddScoped<IPublisher, ActiveMqPublisher>();
+
+        }
+
+        private static Action<IBusRegistrationConfigurator> ActiveMqConfig(IConfiguration configuration)
+        {
+            return x =>
             {
                 x.UsingActiveMq((ctx, cfg) =>
                 {
-                    var settings = ctx.GetRequiredService<ActiveMQSettings>();
                     cfg.Host(configuration["ActiveMQ:Host"], h =>
                     {
                         h.Username(configuration["ActiveMQ:Username"]);
@@ -37,8 +44,7 @@ namespace POC.OrderingService.Infrastructure
                     cfg.ConfigureEndpoints(ctx);
                 });
 
-            });
-
+            };
         }
     }
 }

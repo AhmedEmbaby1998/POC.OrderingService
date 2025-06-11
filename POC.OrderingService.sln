@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "POC.OrderingService.HttpApi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POC.OrderingService.Query", "POC.OrderingService.Query\POC.OrderingService.Query.csproj", "{8A995B0C-6910-4CBC-90C8-B03ECAFA02CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POC.OrderingService.Query.Abstraction", "POC.OrderingService.Query.Abstraction\POC.OrderingService.Query.Abstraction.csproj", "{F4107539-5744-40F2-AFE8-EC0ED043F22C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POC.OrderingService.Query.Contracts", "POC.OrderingService.Query.Abstraction\POC.OrderingService.Query.Contracts.csproj", "{F4107539-5744-40F2-AFE8-EC0ED043F22C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POC.OrderingService.Infrastructure", "POC.OrderingService.Infrastructure\POC.OrderingService.Infrastructure.csproj", "{3403BB36-24D8-47C4-A91E-F08A40C6E21B}"
 EndProject

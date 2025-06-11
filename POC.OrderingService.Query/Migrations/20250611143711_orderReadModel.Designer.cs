@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using POC.OrderingService.Query.Data;
 
 #nullable disable
@@ -12,7 +12,7 @@ using POC.OrderingService.Query.Data;
 namespace POC.OrderingService.Query.Migrations
 {
     [DbContext(typeof(ReadModelDBContext))]
-    [Migration("20250601145415_orderReadModel")]
+    [Migration("20250611143711_orderReadModel")]
     partial class orderReadModel
     {
         /// <inheritdoc />
@@ -20,107 +20,98 @@ namespace POC.OrderingService.Query.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("POC.OrderingService.Query.ReadModels.Orders.OrderItemReadModel", b =>
+            modelBuilder.Entity("POC.OrderingService.Query.Contracts.ReadModels.Orders.OrderItemReadModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<double>("Count")
-                        .HasColumnType("double precision");
+                        .HasColumnType("float");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("OrderReadModelId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ProductName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Unit")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("OrderReadModelId");
-
                     b.ToTable("OrderItemReadModel");
                 });
 
-            modelBuilder.Entity("POC.OrderingService.Query.ReadModels.Orders.OrderReadModel", b =>
+            modelBuilder.Entity("POC.OrderingService.Query.Contracts.ReadModels.Orders.OrderReadModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CustomerName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateOnly?>("DeliveryDate")
                         .HasColumnType("date");
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Street")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ZipCode")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
+                    b.ToTable("OrderReadModels");
                 });
 
-            modelBuilder.Entity("POC.OrderingService.Query.ReadModels.Orders.OrderItemReadModel", b =>
+            modelBuilder.Entity("POC.OrderingService.Query.Contracts.ReadModels.Orders.OrderItemReadModel", b =>
                 {
-                    b.HasOne("POC.OrderingService.Query.ReadModels.Orders.OrderItemReadModel", "Order")
-                        .WithMany()
+                    b.HasOne("POC.OrderingService.Query.Contracts.ReadModels.Orders.OrderReadModel", "Order")
+                        .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("POC.OrderingService.Query.ReadModels.Orders.OrderReadModel", null)
-                        .WithMany("Items")
-                        .HasForeignKey("OrderReadModelId");
-
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("POC.OrderingService.Query.ReadModels.Orders.OrderReadModel", b =>
+            modelBuilder.Entity("POC.OrderingService.Query.Contracts.ReadModels.Orders.OrderReadModel", b =>
                 {
                     b.Navigation("Items");
                 });

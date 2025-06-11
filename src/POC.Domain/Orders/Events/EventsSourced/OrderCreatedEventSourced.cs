@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using POC.Abstractions;
 using POC.Shared.ValueObjects;
 
-namespace POC.Orders.Events
+namespace POC.Orders.Events.EventsSourced
 {
-    public record OrderCreatedEvent :EventSourcedEvent
+    public record OrderCreatedEventSourced : EventSourcedEvent
     {
         [JsonConstructor]
-        public OrderCreatedEvent(OrderId orderId, string customerName, DateTimeOffset orderDate)
+        public OrderCreatedEventSourced(OrderId orderId, string customerName, DateTimeOffset orderDate)
             : base(orderId)
         {
             OrderId = orderId;

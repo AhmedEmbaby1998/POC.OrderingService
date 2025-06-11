@@ -40,6 +40,8 @@ using Volo.Abp.Swashbuckle;
 using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Security.Claims;
 using POC.OrderingService.Query;
+using POC.OrderingService.Infrastructure;
+using Serilog;
 
 namespace POC;
 
@@ -54,12 +56,14 @@ namespace POC;
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule),
-    typeof(OrderingServiceQueryModule)
+    typeof(OrderingServiceQueryModule),
+    typeof(InfrastructureModule)
     )]
 public class POCHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
+        Log.Information("PreConfiguring POC HTTP API Host Module");
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
 
@@ -90,6 +94,7 @@ public class POCHttpApiHostModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        Log.Information("ConfigureServices POC HTTP API Host Module");
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
 
@@ -120,6 +125,7 @@ public class POCHttpApiHostModule : AbpModule
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
+        Log.Information("Configured POC HTTP API Host Module");
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)

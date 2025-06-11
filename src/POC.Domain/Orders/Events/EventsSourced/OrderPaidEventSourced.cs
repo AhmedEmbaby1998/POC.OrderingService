@@ -3,12 +3,12 @@ using System.Text.Json.Serialization;
 using POC.Abstractions;
 using POC.Shared.ValueObjects;
 
-namespace POC.Orders.Events
+namespace POC.Orders.Events.EventsSourced
 {
-    public record OrderPaidEvent :EventSourcedEvent
+    public record OrderPaidEventSourced : EventSourcedEvent
     {
         [JsonConstructor]
-        public OrderPaidEvent(OrderId orderId, string customerName, Money totalPrice)
+        public OrderPaidEventSourced(OrderId orderId, string customerName, Money totalPrice)
             : base(orderId)
         {
             OrderId = orderId;

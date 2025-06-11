@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 using Dapper;
 using POC.OrderingService.Query.Abstraction.Dtos.Orders;
 using POC.OrderingService.Query.Abstraction.Repositories;
+using POC.OrderingService.Query.Contracts.ReadModels.Orders;
 using POC.OrderingService.Query.Data;
-using POC.OrderingService.Query.ReadModels.Orders;
 
 namespace POC.OrderingService.Query.Repositories
 {
-    internal class OrderReadModelRepository : BaseReadModelRepository, IOrderReadModelRepository
+    internal class OrderReadModelRepository : BaseReadModelRepository<OrderReadModel>,IOrderReadModelRepository
     {
-        public OrderReadModelRepository(ReadModelDBContext context, DbConnection dbconnection) :base(dbconnection)
+        public OrderReadModelRepository(ReadModelDBContext context, DbConnection dbconnection) :base(dbconnection,context)
         {
         }
 
@@ -25,7 +25,7 @@ namespace POC.OrderingService.Query.Repositories
                 throw new ArgumentException("Customer name cannot be empty", nameof(name));
             }
 
-            const string sql = @"
+             string sql = @$"
         SELECT 
             o.Id AS OrderId,
             c.Name AS CustomerName,
@@ -42,8 +42,8 @@ namespace POC.OrderingService.Query.Repositories
             oi.Unit AS Unit,
             oi.Price AS Amount,
             oi.Currency AS Currency
-        FROM Orders o
-        LEFT JOIN OrderItems oi ON o.Id = oi.OrderId
+        FROM {TableName<OrderReadModel>()} o
+        LEFT JOIN {TableName<OrderItemReadModel>()} oi ON o.Id = oi.OrderId
         WHERE c.Name = @CustomerName
         ORDER BY o.Id, oi.Id";
 

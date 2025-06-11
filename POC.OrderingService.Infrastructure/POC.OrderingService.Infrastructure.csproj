@@ -14,7 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\src\POC.Application.Contracts\POC.OrderingService.Application.Contracts.csproj" />
     <ProjectReference Include="..\src\POC.Domain\POC.OrderingService.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Consumers\" />
   </ItemGroup>
 
 </Project>
