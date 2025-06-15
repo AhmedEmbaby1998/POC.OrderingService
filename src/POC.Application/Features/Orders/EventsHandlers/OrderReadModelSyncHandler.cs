@@ -15,19 +15,12 @@ using Volo.Abp.EventBus;
 
 namespace POC.Features.Orders.EventsHandlers
 {
-    public class OrderReadModelSyncHandler : ILocalEventHandler<OrderEvent>,IScopedDependency,
-        INotificationHandler<OrderEvent>
-    {
+    public class OrderReadModelSyncHandler : ILocalEventHandler<OrderEvent>,IScopedDependency    {
         private readonly IOrderReadModelRepository _orderReadModelRepository;
 
         public OrderReadModelSyncHandler(IOrderReadModelRepository orderReadModelRepository)
         {
             _orderReadModelRepository = orderReadModelRepository ?? throw new ArgumentNullException(nameof(orderReadModelRepository));
-        }
-
-        public Task Handle(OrderEvent notification, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task HandleEventAsync(OrderEvent eventData)

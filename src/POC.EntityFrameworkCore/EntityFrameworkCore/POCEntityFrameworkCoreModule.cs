@@ -65,6 +65,6 @@ public class POCEntityFrameworkCoreModule : AbpModule
 
         });
         
-        context.Services.AddScoped<IOrderRepository,OrderRepository>();
+        context.Services.AddScoped<IOrderRepository,OrderWriteRepository>();
     }
 }
