@@ -20,7 +20,7 @@ namespace POC.Orders
 
         private Order(OrderId id,string customerName, Address address)
         {
-            var e = new OrderCreatedEventSourced(id, customerName, DateTime.Now);
+            var e = new OrderCreatedEventSourced(id, customerName,address,DateTime.Now);
             this.RaiseEventSourcedEvent(e);
             Apply(e);
             this.AddLocalEvent(this.ToOrderCreatedEvent());
@@ -91,6 +91,7 @@ namespace POC.Orders
             this.Id = orderCreatedEvent.OrderId;
             this.CustomerName = orderCreatedEvent.CustomerName;
             this.DeliveryDate = null;
+            this.Address = orderCreatedEvent.Address;
             this.TotalPrice = Money.Zero;
         }
 
