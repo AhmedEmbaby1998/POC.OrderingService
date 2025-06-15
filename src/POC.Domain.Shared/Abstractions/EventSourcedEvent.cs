@@ -11,6 +11,8 @@ namespace POC.Abstractions
         public Guid AggregateId {get;protected set; }
         public DateTimeOffset OccurredOn { get;protected set; }
 
+
+
         protected EventSourcedEvent(Guid aggregateId)
         {
             AggregateId = aggregateId;

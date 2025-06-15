@@ -36,12 +36,12 @@ namespace POC.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerOrder([FromQuery] string name)
         {
             try
             {
-                OrderDto result = await _meditor.Send(new GetOrderByIdQuery(id));
+                var result = await _meditor.Send(new GetOrderByCustomerNameQuery(name));
                 return Ok(result);
             }
             catch (Exception e)

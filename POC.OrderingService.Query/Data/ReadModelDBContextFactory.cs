@@ -5,7 +5,7 @@ using System.IO;
 
 namespace POC.OrderingService.Query.Data
 {
-    public class ReadModelDBContextFactory : IDesignTimeDbContextFactory<ReadModelDBContext>
+    internal class ReadModelDBContextFactory : IDesignTimeDbContextFactory<ReadModelDBContext>
     {
         public ReadModelDBContext CreateDbContext(string[] args)
         {

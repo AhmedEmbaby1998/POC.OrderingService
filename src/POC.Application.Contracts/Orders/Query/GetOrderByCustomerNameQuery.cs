@@ -8,13 +8,13 @@ using MediatR;
 
 namespace POC.Orders.Query
 {
-    public record GetOrderByIdQuery : IRequest<OrderDto>
+    public record GetOrderByCustomerNameQuery : IRequest<IEnumerable<OrderDto>>
     {
         [JsonConstructor]
-        public GetOrderByIdQuery(Guid orderId)
+        public GetOrderByCustomerNameQuery(string customerName)
         {
-            OrderId = orderId;
+            CustomerName = customerName;
         }
-        public Guid OrderId { get; }
+        public string CustomerName { get; }
     }
 }

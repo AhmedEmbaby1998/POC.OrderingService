@@ -1,14 +1,17 @@
 ﻿
 using System.Data;
+using System.Data.Common;
+using System.Reflection;
 using Microsoft.Data.SqlClient;
 using Polly;
 
-internal class ResilientDbConnection : IDbConnection
+internal class ResilientDbConnection : DbConnection
 {
-    private readonly IDbConnection _inner;
+    private readonly DbConnection _inner;
     private readonly Policy _resiliencePolicy;
 
-    public ResilientDbConnection(IDbConnection inner)
+
+    public ResilientDbConnection(DbConnection inner)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
 
@@ -49,32 +52,43 @@ internal class ResilientDbConnection : IDbConnection
         });
     }
 
-    public string ConnectionString
+
+
+    public override string ConnectionString { get => _inner.ConnectionString; set => _inner.ConnectionString = value; }
+
+    public override string Database => _inner.Database;
+
+    public override string DataSource => _inner.DataSource;
+
+    public override string ServerVersion => _inner.ServerVersion;
+
+    public override ConnectionState State => _inner.State;
+    protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
     {
-        get => _inner.ConnectionString;
-        set => _inner.ConnectionString = value;
+        return _inner.BeginTransaction(isolationLevel);
     }
 
-    public int ConnectionTimeout => _inner.ConnectionTimeout;
-    public string Database => _inner.Database;
-    public ConnectionState State => _inner.State;
+    public override void ChangeDatabase(string databaseName)
+    {
+        _inner.ChangeDatabase(databaseName);
+    }
 
-    public void ChangeDatabase(string databaseName) => _inner.ChangeDatabase(databaseName);
-    public void Close() => _inner.Close();
-    public IDbTransaction BeginTransaction() => _inner.BeginTransaction();
-    public IDbTransaction BeginTransaction(IsolationLevel il) => _inner.BeginTransaction(il);
+    public override void Close()
+    {
+        _inner.Close();
+    }
 
-    public void Dispose() => _inner.Dispose(); 
-    public IDbCommand CreateCommand()
+    protected override DbCommand CreateDbCommand()
     {
         return ExecuteWithResilience(() => _inner.CreateCommand());
     }
-    public void Open()
+
+    public override void Open()
     {
         ExecuteWithResilience(() => {
             _inner.Open();
             return 1;
         });
     }
+ 
 }
-

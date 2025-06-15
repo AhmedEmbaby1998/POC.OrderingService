@@ -9,7 +9,7 @@ namespace POC.OrderingService.Query.Abstraction.Dtos.Orders
 {
     public class OrderReadModelDto
     {
-        public Guid OrderId { get; set; }
+        public Guid Id { get; set; }
         public string CustomerName { get;set; }
         public string Street { get;  set; }
         public string City { get;  set; }

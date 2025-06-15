@@ -7,6 +7,7 @@ using Volo.Abp.FeatureManagement;
 using Volo.Abp.Modularity;
 using Volo.Abp.TenantManagement;
 using Microsoft.Extensions.DependencyInjection;
+using POC.Features.Orders.Mappers;
 
 namespace POC;
 
@@ -32,6 +33,14 @@ public class POCApplicationModule : AbpModule
         context.Services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(POCApplicationModule).Assembly);
+        });
+
+        Configure<AbpAutoMapperOptions>(options =>
+        {
+            // Add all mapping profiles in this assembly
+            options.AddMaps<POCApplicationModule>();
+
+            options.ValidateProfile<OrderMappingProfile>();
         });
     }
 }

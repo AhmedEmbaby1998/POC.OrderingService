@@ -9,13 +9,13 @@ using Serilog;
 
 namespace POC.OrderingService.Query.Data
 {
-    public class ReadModelDBContext : DbContext
+    internal class ReadModelDBContext : DbContext
     {
         public ReadModelDBContext(DbContextOptions<ReadModelDBContext> options) : base(options)
         {
             Log.Logger.Information("ReadModelDBContext initialized with options: {Options}", options);
         }
 
-        public DbSet<OrderReadModel> OrderReadModels { get; set; }
+        public DbSet<OrderReadModel> OrderReadModel { get; set; }
     }
 }

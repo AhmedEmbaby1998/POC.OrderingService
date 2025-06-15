@@ -8,17 +8,24 @@ using POC.Shared.ValueObjects;
 
 namespace POC.Orders.Query
 {
-    public record class OrderItemDto(string ProductName, Quantity Quantity, Money Money);
-
-    public record OrderDto
+    public  class OrderItemDto
     {
-        public Guid Id { private set; get; }
-        public string CustomerName { get; private set; }
-        public Address Address { get; private set; }
-        public Money TotalPrice { get; private set; }
+        public Guid Id { init; get; }
+        public string ProductName { init; get; }
+        public Quantity Quantity { init; get; }
+        public Money Money { init; get; }
+    }
 
-        public IEnumerable<OrderItemDto> Items = [];
+    public class OrderDto
+    {
+        public Guid Id {  set; get; }
+        public string CustomerName { get;  set; }
+        public Address Address { get;  set; }
+        public Money TotalPrice { get;  set; }
 
+        public IEnumerable<OrderItemDto> Items { set; get; }
+
+        public OrderDto() { }
         public OrderDto(Guid id, string customerName, Address address, Money totalPrice, IEnumerable<OrderItemDto> items)
         {
             Id = id;

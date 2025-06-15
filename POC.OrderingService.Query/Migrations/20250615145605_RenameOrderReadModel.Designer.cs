@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using POC.OrderingService.Query.Data;
 
@@ -11,9 +12,11 @@ using POC.OrderingService.Query.Data;
 namespace POC.OrderingService.Query.Migrations
 {
     [DbContext(typeof(ReadModelDBContext))]
-    partial class ReadModelDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250615145605_RenameOrderReadModel")]
+    partial class RenameOrderReadModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

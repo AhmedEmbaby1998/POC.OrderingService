@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace POC.OrderingService.Query
             context.Services.AddDbContext<ReadModelDBContext>(options =>
                            options.UseSqlServer(connectionString));
             Log.Information("ReadModelDBContext configured with SQL Server.");
-            context.Services.AddScoped<IDbConnection>(provider =>
+            context.Services.AddScoped<DbConnection>(provider =>
             {
                 return new ResilientDbConnection(new SqlConnection(connectionString));
             });

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,9 +12,9 @@ namespace POC.OrderingService.Query.Repositories
 {
     internal class BaseReadModelRepository<T> where T : class
     {
-        protected readonly IDbConnection _dbConnection;
+        protected readonly DbConnection _dbConnection;
         private readonly ReadModelDBContext _readModelDbContext;
-        public BaseReadModelRepository(IDbConnection dbConnection, ReadModelDBContext readModelDbContext)
+        public BaseReadModelRepository(DbConnection dbConnection, ReadModelDBContext readModelDbContext)
         {
             Log.Information("BaseReadModelRepository initialized with DbConnection: {DbConnection} and ReadModelDBContext: {ReadModelDBContext}", dbConnection, readModelDbContext);
             _dbConnection = dbConnection;
@@ -27,7 +28,7 @@ namespace POC.OrderingService.Query.Repositories
         /// </summary>
         /// <typeparam name="V">Entity Type</typeparam>
         /// <returns>table Name</returns>
-        protected static string TableName<V>() => $"{typeof(V).Name}s";
+        protected static string TableName<V>() => $"{typeof(V).Name}";
 
         public virtual async Task<T?> GetAsync(Guid id)
         {
