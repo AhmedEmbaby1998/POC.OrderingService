@@ -5,10 +5,10 @@ using POC.Shared.ValueObjects;
 
 namespace POC.Orders.Events.EventsSourced
 {
-    public record OrderPaidEventSourced : EventSourcedEvent
+    internal record OrderPaidEventSourced : EventSourcedEvent
     {
         [JsonConstructor]
-        public OrderPaidEventSourced(OrderId orderId, string customerName, Money totalPrice)
+        internal OrderPaidEventSourced(OrderId orderId, string customerName, Money totalPrice)
             : base(orderId)
         {
             OrderId = orderId;

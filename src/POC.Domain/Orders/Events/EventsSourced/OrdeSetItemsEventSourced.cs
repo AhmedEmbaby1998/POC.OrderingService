@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MediatR;
 using POC.Abstractions;
 
 namespace POC.Orders.Events.EventsSourced
 {
-    public record OrdeSetItemsEventSourced : EventSourcedEvent
+    internal record OrdeSetItemsEventSourced : EventSourcedEvent,INotification
     {
         public OrderId OrderId { get; }
         public IEnumerable<OrderItem> Items { get; }
 
         [JsonConstructor]
-        public OrdeSetItemsEventSourced(OrderId orderId, IEnumerable<OrderItem> items)
+        internal OrdeSetItemsEventSourced(OrderId orderId, IEnumerable<OrderItem> items)
             : base(orderId)
         {
             OrderId = orderId;

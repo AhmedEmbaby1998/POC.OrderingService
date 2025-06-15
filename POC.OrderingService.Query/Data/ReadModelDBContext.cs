@@ -11,7 +11,7 @@ namespace POC.OrderingService.Query.Data
 {
     public class ReadModelDBContext : DbContext
     {
-        public ReadModelDBContext(DbContextOptions options) : base(options)
+        public ReadModelDBContext(DbContextOptions<ReadModelDBContext> options) : base(options)
         {
             Log.Logger.Information("ReadModelDBContext initialized with options: {Options}", options);
         }

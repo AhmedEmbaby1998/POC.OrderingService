@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace POC.OrderingService.Query.Repositories
 {
     internal class OrderReadModelRepository : BaseReadModelRepository<OrderReadModel>,IOrderReadModelRepository
     {
-        public OrderReadModelRepository(ReadModelDBContext context, DbConnection dbconnection) :base(dbconnection,context)
+        public OrderReadModelRepository(ReadModelDBContext context, IDbConnection dbconnection) :base(dbconnection,context)
         {
         }
 
