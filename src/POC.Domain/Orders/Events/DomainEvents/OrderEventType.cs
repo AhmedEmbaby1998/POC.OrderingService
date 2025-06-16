@@ -11,5 +11,6 @@ namespace POC.Orders.Events.DomainEvents
         Created = 0,
         Paid = 1,
         Cancelled = 2,
+        SetItems=3
     }
 }

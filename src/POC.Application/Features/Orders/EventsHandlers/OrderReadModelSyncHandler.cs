@@ -36,21 +36,34 @@ namespace POC.Features.Orders.EventsHandlers
                 Street = eventData.Address.Street,
                 State = eventData.Address.State,
                 ZipCode = eventData.Address.ZipCode,
-                Items = eventData.Items.Select(item => new OrderItemReadModel
-                {
-                    Id = item.Id,
-                    ProductName = item.ProductName,
-                    Count = item.Quantity.Count,
-                    Unit = item.Quantity.Unit,
-                    Amount = item.Price.Amount,
-                    Currency = item.Price.Currency
-                }).ToList()
+                Items = eventData.Items.Select(MapOrderItemToReadModel()).ToList()
             };
 
             if (eventData.EventType is OrderEventType.Created)
             {
                 await _orderReadModelRepository.InsertAsync(orderReadModel);
             }
+            else if (eventData.EventType is OrderEventType.SetItems)
+            {
+                var order = await _orderReadModelRepository.GetAsync(eventData.Id);
+                order.Items = eventData.Items.Select(MapOrderItemToReadModel()).ToList();
+                await _orderReadModelRepository.UpdateAsync(order);
+            }
+
+
+        }
+
+        private static Func<OrderItemEvent, OrderItemReadModel> MapOrderItemToReadModel()
+        {
+            return item => new OrderItemReadModel
+            {
+                Id = item.Id,
+                ProductName = item.ProductName,
+                Count = item.Quantity.Count,
+                Unit = item.Quantity.Unit,
+                Amount = item.Price.Amount,
+                Currency = item.Price.Currency
+            };
         }
     }
 }

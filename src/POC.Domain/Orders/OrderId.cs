@@ -10,13 +10,12 @@ namespace POC.Orders
 {
     public sealed record OrderId
     {
-        public Guid Id { get; private set; }
+        public Guid Value { get; private set; }
         [JsonConstructor]
-        private OrderId(Guid id)
+        private OrderId(Guid value)
         {
-            Id = id;
+            Value = value;
         }
-        public static implicit operator Guid(OrderId orderId) => orderId.Id;
         public static implicit operator string(OrderId orderId) => orderId.ToString();
 
         public static OrderId New(Guid id)

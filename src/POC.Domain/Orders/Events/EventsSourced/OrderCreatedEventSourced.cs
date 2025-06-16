@@ -13,7 +13,7 @@ namespace POC.Orders.Events.EventsSourced
     {
         [JsonConstructor]
         internal OrderCreatedEventSourced(OrderId orderId, string customerName,Address address,DateTimeOffset orderDate)
-            : base(orderId) 
+            : base(orderId.Value) 
         {
             OrderId = orderId;
             CustomerName = customerName;
@@ -21,9 +21,9 @@ namespace POC.Orders.Events.EventsSourced
             OrderDate = orderDate;
         }
 
-        public OrderId OrderId { get; }
-        public string CustomerName { get; }
-        public Address Address { get; }
-        public DateTimeOffset OrderDate { get; }
+        public OrderId OrderId { get; set; }
+        public string CustomerName { get; set; }
+        public Address Address { get; set; }
+        public DateTimeOffset OrderDate { get; set; }
     }
 }

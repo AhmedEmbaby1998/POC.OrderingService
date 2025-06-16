@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using POC.Abstractions;
 using POC.Orders.Events.EventsSourced;
@@ -45,7 +46,7 @@ namespace POC.Orders
             var e = new OrdeSetItemsEventSourced(this.Id,items);
             RaiseEventSourcedEvent(e);
             Apply(e);
-            AddLocalEvent(e);
+            AddLocalEvent(this.ToOrderSetItemsEvent());
         }
 
         public void Pay(Money amount)
@@ -60,7 +61,7 @@ namespace POC.Orders
         {
             if (DeliveryDate is { })
             {
-                throw new CanNotModifyDeliveredOrder(this.Id);
+                throw new CanNotModifyDeliveredOrder(this.Id.Value);
             }
             if (e.TotalPrice < this.TotalPrice)
             {
@@ -73,7 +74,7 @@ namespace POC.Orders
         {
             if (DeliveryDate is { })
             {
-                throw new CanNotModifyDeliveredOrder(this.Id);
+                throw new CanNotModifyDeliveredOrder(this.Id.Value);
             }
 
             this._items.Clear();
@@ -95,15 +96,12 @@ namespace POC.Orders
             this.TotalPrice = Money.Zero;
         }
 
-        public static Order Rehydrate(IEnumerable<StoredEvent> @event)
+        public static Order Rehydrate(IEnumerable<EventSourcedEvent> events)
         {
             var order = new Order();
-            foreach (var e in @event)
+            foreach (var e in events)
             {
-                var eventType = Type.GetType(e.EventType);
-                var domainEvent = JsonSerializer.Deserialize(e.EventData, eventType);
-
-                ((dynamic)order).Apply((dynamic)domainEvent);
+                ((dynamic)order).Apply((dynamic)e);
             }
             return order;
         }

@@ -13,7 +13,7 @@ namespace POC.Orders.Factories
         {
             return new OrderEvent
             {
-                Id = order.Id,
+                Id = order.Id.Value,
                 CustomerName = order.CustomerName,
                 TotalPrice = order.TotalPrice,
                 Address = order.Address,
@@ -32,7 +32,7 @@ namespace POC.Orders.Factories
         {
             return new OrderEvent
             {
-                Id = order.Id,
+                Id = order.Id.Value,
                 CustomerName = order.CustomerName,
                 TotalPrice = order.TotalPrice,
                 Address = order.Address,
@@ -44,6 +44,25 @@ namespace POC.Orders.Factories
                     Price = item.Price
                 }),
                 EventType = OrderEventType.Paid
+            };
+        }
+
+        internal static OrderEvent ToOrderSetItemsEvent(this Order order)
+        {
+            return new OrderEvent
+            {
+                Id = order.Id.Value,
+                CustomerName = order.CustomerName,
+                TotalPrice = order.TotalPrice,
+                Address = order.Address,
+                DeliveryDate = order.DeliveryDate,
+                Items = order.Items.Select(item => new OrderItemEvent
+                {
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    Price = item.Price
+                }),
+                EventType = OrderEventType.SetItems
             };
         }
     }

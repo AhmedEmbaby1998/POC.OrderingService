@@ -16,7 +16,7 @@ namespace POC.Orders.Events.EventsSourced
 
         [JsonConstructor]
         internal OrdeSetItemsEventSourced(OrderId orderId, IEnumerable<OrderItem> items)
-            : base(orderId)
+            : base(orderId.Value)
         {
             OrderId = orderId;
             Items = items;

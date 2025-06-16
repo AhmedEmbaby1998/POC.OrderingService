@@ -9,7 +9,7 @@ namespace POC.Orders.Events.EventsSourced
     {
         [JsonConstructor]
         internal OrderPaidEventSourced(OrderId orderId, string customerName, Money totalPrice)
-            : base(orderId)
+            : base(orderId.Value)
         {
             OrderId = orderId;
             CustomerName = customerName;

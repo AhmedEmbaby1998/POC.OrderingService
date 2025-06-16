@@ -7,7 +7,6 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using POC.Orders.Commands;
 using POC.Orders.Query;
-using Volo.Abp.AspNetCore.Mvc;
 
 namespace POC.Controllers
 {
@@ -31,6 +30,20 @@ namespace POC.Controllers
                 return Ok(result);
             }
             catch(Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        [HttpPut("Pay")]
+        public async Task<IActionResult> Pay([FromBody] PayOrderCommand command)
+        {
+            try
+            {
+                var result = await _meditor.Send(command);
+                return Ok(result);
+            }
+            catch (Exception e)
             {
                 return BadRequest(e);
             }
