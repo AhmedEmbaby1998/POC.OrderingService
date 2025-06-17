@@ -28,18 +28,9 @@ namespace POC.Repositories.Orders
         {
         }
 
-        public override async Task<Order> GetAsync(OrderId orderId)
+        public override Order ReHydrate(IEnumerable<EventSourcedEvent> events)
         {
-            var historyEvents =await EventStore.GetEventsAsync(orderId.Value.ToString());
-            List<EventSourcedEvent> events = [];
-            foreach (var e in historyEvents)
-            {
-                var eventType = Type.GetType(e.EventType);
-                var domainEvent = this.JsonSerializer.Deserialize(eventType, e.EventData);
-                events.Add((EventSourcedEvent)domainEvent);
-            }
-            var order = Order.Rehydrate(events);
-            return order;
+            return Order.Rehydrate(events);
         }
     }
 }

@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using POC.Abstractions;
+using POC.Orders;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Json;
 
@@ -15,15 +18,28 @@ namespace POC.Repositories
         protected readonly ILocalEventBus EventBus;
         protected readonly IJsonSerializer JsonSerializer;
 
-        public WriteRepository(IEventStore eventStore, ILocalEventBus eventBus, IJsonSerializer jsonSerializer)
+        protected WriteRepository(IEventStore eventStore, ILocalEventBus eventBus, IJsonSerializer jsonSerializer)
         {
             EventStore = eventStore;
             EventBus = eventBus;
             JsonSerializer = jsonSerializer;
         }
 
-        public abstract Task<TAggregate> GetAsync(TId id);
+        public abstract TAggregate ReHydrate(IEnumerable<EventSourcedEvent> events);
 
+        public async Task<TAggregate> GetAsync(OrderId orderId)
+        {
+            var historyEvents = await EventStore.GetEventsAsync(orderId.Value.ToString());
+            List<EventSourcedEvent> events = [];
+            foreach (var e in historyEvents)
+            {
+                var eventType = Type.GetType(e.EventType);
+                var domainEvent = this.JsonSerializer.Deserialize(eventType, e.EventData);
+                events.Add((EventSourcedEvent)domainEvent);
+            }
+            var agg = ReHydrate(events);
+            return agg;
+        }
         public async Task SaveAsync(TAggregate aggregate, CancellationToken cancellationToken)
         {
             var events = aggregate.UncommittedEvents.Select(e => new StoredEvent
