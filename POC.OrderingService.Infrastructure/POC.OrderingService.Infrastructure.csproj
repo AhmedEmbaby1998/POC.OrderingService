@@ -11,6 +11,7 @@
     <PackageReference Include="Apache.NMS.ActiveMQ" Version="2.1.1" />
     <PackageReference Include="MassTransit" Version="8.4.1" />
     <PackageReference Include="MassTransit.ActiveMQ" Version="8.4.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>

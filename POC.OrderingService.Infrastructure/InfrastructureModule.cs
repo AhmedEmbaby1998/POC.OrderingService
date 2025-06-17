@@ -7,6 +7,7 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using POC.OrderingService.Infrastructure.ActiveMq;
+using POC.OrderingService.Infrastructure.RedHatAMQ;
 using Volo.Abp;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Modularity;
@@ -23,7 +24,7 @@ namespace POC.OrderingService.Infrastructure
                 context.Services.GetConfiguration().GetSection("ActiveMQ")
             );
             context.Services.AddMassTransit(ActiveMqConfig(configuration));
-            context.Services.AddScoped<IPublisher, ActiveMqPublisher>();
+            context.Services.AddScoped<IPublisher, RedHatAMQEventBus>();
 
         }
 
