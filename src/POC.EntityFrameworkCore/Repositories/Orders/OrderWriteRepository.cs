@@ -34,14 +34,14 @@ namespace POC.Repositories.Orders
         public override async Task<Order> GetAsync(OrderId orderId)
         {
             var historyEvents =await EventStore.GetEventsAsync(orderId.Value.ToString());
-            List<EventSourcedEvent> events = [];
-            foreach (var e in historyEvents)
+            List<EventSourcedEvent> eventSourcedEvents = [];
+            foreach (var @event in historyEvents)
             {
-                var eventType = Type.GetType(e.EventType);
-                var domainEvent = this.JsonSerializer.Deserialize(eventType, e.EventData);
-                events.Add((EventSourcedEvent)domainEvent);
+                var eventType = Type.GetType(@event.EventType);
+                var domainEvent = this.JsonSerializer.Deserialize(eventType, @event.EventData);
+                eventSourcedEvents.Add((EventSourcedEvent)domainEvent);
             }
-            var order = Order.Rehydrate(events);
+            var order = Order.Rehydrate(eventSourcedEvents);
             return order;
         }
     }
