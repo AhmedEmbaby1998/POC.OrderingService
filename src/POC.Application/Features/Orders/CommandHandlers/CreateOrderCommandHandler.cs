@@ -15,11 +15,9 @@ namespace POC.Features.Orders.CommandHandlers
     internal class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Guid>
     {
         private readonly IOrderRepository _orderRepository;
-        private readonly ICorrelationIdProvider _correlationIdProvider;
-        public CreateOrderCommandHandler(IOrderRepository orderRepository, ICorrelationIdProvider correlationIdProvider)
+        public CreateOrderCommandHandler(IOrderRepository orderRepository)
         {
             _orderRepository = orderRepository;
-            _correlationIdProvider = correlationIdProvider;
         }
 
         [UnitOfWork]
