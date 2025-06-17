@@ -17,14 +17,17 @@ using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Json;
+using Volo.Abp.Tracing;
+using Volo.Abp.Users;
+using Microsoft.AspNetCore.Http;
 
 namespace POC.Repositories.Orders
 {
 
     public class OrderWriteRepository : WriteRepository<Order,OrderId>,IOrderRepository
     {
-        public OrderWriteRepository(IEventStore eventStore, ILocalEventBus eventBus, IJsonSerializer jsonSerializer)
-            : base(eventStore, eventBus,jsonSerializer)
+        public OrderWriteRepository(IEventStore eventStore, ILocalEventBus eventBus, IJsonSerializer jsonSerializer, IHttpContextAccessor contextAccessor, ICurrentUser currentUser)
+            : base(eventStore, eventBus,jsonSerializer,currentUser, contextAccessor)
         {
         }
 

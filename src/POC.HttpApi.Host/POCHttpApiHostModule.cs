@@ -42,6 +42,7 @@ using Volo.Abp.Security.Claims;
 using POC.OrderingService.Query;
 using POC.OrderingService.Infrastructure;
 using Serilog;
+using Volo.Abp.Tracing;
 
 namespace POC;
 
@@ -116,6 +117,7 @@ public class POCHttpApiHostModule : AbpModule
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
             });
         }
+
 
         ConfigureAuthentication(context);
         ConfigureUrls(configuration);

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediatR;
 using POC.Orders;
 using POC.Orders.Commands;
+using Volo.Abp.Tracing;
 using Volo.Abp.Uow;
 
 namespace POC.Features.Orders.CommandHandlers
@@ -14,9 +15,11 @@ namespace POC.Features.Orders.CommandHandlers
     internal class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Guid>
     {
         private readonly IOrderRepository _orderRepository;
-        public CreateOrderCommandHandler(IOrderRepository orderRepository)
+        private readonly ICorrelationIdProvider _correlationIdProvider;
+        public CreateOrderCommandHandler(IOrderRepository orderRepository, ICorrelationIdProvider correlationIdProvider)
         {
             _orderRepository = orderRepository;
+            _correlationIdProvider = correlationIdProvider;
         }
 
         [UnitOfWork]
