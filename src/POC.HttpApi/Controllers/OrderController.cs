@@ -17,12 +17,10 @@ namespace POC.Controllers
     public class OrderController: POCController
     {
         private readonly IMediator _meditor;
-        private readonly ICorrelationIdProvider _correlationIdProvider;
         private readonly IHttpContextAccessor _httpContext;
-        public OrderController(IMediator meditor, ICorrelationIdProvider correlationIdProvider, IHttpContextAccessor httpContext)
+        public OrderController(IMediator meditor, IHttpContextAccessor httpContext)
         {
             _meditor = meditor;
-            _correlationIdProvider = correlationIdProvider;
             _httpContext = httpContext;
         }
 
