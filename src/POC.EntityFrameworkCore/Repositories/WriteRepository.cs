@@ -30,14 +30,14 @@ namespace POC.Repositories
         public async Task<TAggregate> GetAsync(OrderId orderId)
         {
             var historyEvents = await EventStore.GetEventsAsync(orderId.Value.ToString());
-            List<EventSourcedEvent> events = [];
-            foreach (var e in historyEvents)
+            List<EventSourcedEvent> eventSourcedEvents = [];
+            foreach (var @event in historyEvents)
             {
-                var eventType = Type.GetType(e.EventType);
-                var domainEvent = this.JsonSerializer.Deserialize(eventType, e.EventData);
-                events.Add((EventSourcedEvent)domainEvent);
+                var eventType = Type.GetType(@event.EventType);
+                var domainEvent = this.JsonSerializer.Deserialize(eventType, @event.EventData);
+                eventSourcedEvents.Add((EventSourcedEvent)domainEvent);
             }
-            var agg = ReHydrate(events);
+            var agg = ReHydrate(eventSourcedEvents);
             return agg;
         }
         public async Task SaveAsync(TAggregate aggregate, CancellationToken cancellationToken)
