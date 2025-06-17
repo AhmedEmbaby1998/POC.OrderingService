@@ -3,36 +3,36 @@ using System.Data;
 using System.Data.Common;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using Polly;
 
-internal class ResilientDbConnection : DbConnection
+internal partial class ResilientDbConnection : DbConnection
 {
     private readonly DbConnection _inner;
     private readonly Policy _resiliencePolicy;
 
-
-    public ResilientDbConnection(DbConnection inner)
+    public ResilientDbConnection(DbConnection inner, IOptions<SqlResilienceOptions> options)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        var config = options.Value;
 
         var circuitBreakerPolicy = Policy
             .Handle<SqlException>()
             .Or<TimeoutException>()
             .CircuitBreaker(
-                exceptionsAllowedBeforeBreaking: 20,
-                durationOfBreak: TimeSpan.FromMinutes(2)
-                );
+                exceptionsAllowedBeforeBreaking: config.ExceptionsAllowedBeforeBreaking,
+                durationOfBreak: TimeSpan.FromMinutes(config.BreakDurationInMinutes)
+            );
 
         var reTryPolicy = Policy
-             .Handle<SqlException>()
-             .Or<TimeoutException>()
-             .WaitAndRetry(3,
-             retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                     (exception, timeSpan) =>
-                     {
-                         // Log the exception or take any other action
-                         Console.WriteLine($"An error occurred: {exception.Message}. Waiting {timeSpan} before next retry.");
-                     });
+            .Handle<SqlException>()
+            .Or<TimeoutException>()
+            .WaitAndRetry(config.RetryCount,
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(config.RetryBaseDelayInSeconds, retryAttempt)),
+                (exception, timeSpan) =>
+                {
+                    Console.WriteLine($"An error occurred: {exception.Message}. Waiting {timeSpan} before next retry.");
+                });
 
         _resiliencePolicy = Policy.Wrap(circuitBreakerPolicy, reTryPolicy);
     }
@@ -51,7 +51,7 @@ internal class ResilientDbConnection : DbConnection
             }
         });
     }
-
+    
 
 
     public override string ConnectionString { get => _inner.ConnectionString; set => _inner.ConnectionString = value; }

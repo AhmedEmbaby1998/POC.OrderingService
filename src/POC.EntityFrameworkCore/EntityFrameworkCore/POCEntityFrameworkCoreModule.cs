@@ -16,6 +16,7 @@ using Volo.Abp.Studio;
 using POC.Orders;
 using POC.Repositories.Orders;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
+using Microsoft.Extensions.Configuration;
 
 namespace POC.EntityFrameworkCore;
 
