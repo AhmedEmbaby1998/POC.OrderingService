@@ -17,11 +17,9 @@ namespace POC.Controllers
     public class OrderController: POCController
     {
         private readonly IMediator _meditor;
-        private readonly IHttpContextAccessor _httpContext;
-        public OrderController(IMediator meditor, IHttpContextAccessor httpContext)
+        public OrderController(IMediator meditor)
         {
             _meditor = meditor;
-            _httpContext = httpContext;
         }
 
         [HttpPost]
