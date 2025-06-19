@@ -4,10 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Amqp.Handler;
 using Apache.NMS;
+using Apache.NMS.ActiveMQ;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using POC.OrderingService.Infrastructure.ActiveMq;
 using Volo.Abp;
 using Volo.Abp.EventBus;
 using Volo.Abp.EventBus.Distributed;
@@ -16,51 +20,56 @@ using Volo.Abp.Uow;
 
 namespace POC.OrderingService.Infrastructure.RedHatAMQ
 {
-    public class RedHatAMQEventBus : IDistributedEventBus
+    public record MyEvent99(string Message);
+
+    internal class RedHatAMQEventBus : IDistributedEventBus
     {
         private readonly static ConcurrentDictionary<string, IMessageConsumer> _consumers ;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConnectionFactory _connectionFactory;
         private readonly ILogger<RedHatAMQEventBus> _logger;
         private readonly IEventOutboxManager _outboxManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private IConnection _connection;
-        private Apache.NMS.ISession _session;
-
+        private  IConnection _connection;
+        private  Apache.NMS.ISession _session;
+        private readonly RedHatAMQSettings _redhatSettings;
+        private readonly IPublishEndpoint _publisher;
         static RedHatAMQEventBus()
         { 
             _consumers = new ConcurrentDictionary<string, IMessageConsumer>(); 
         }
         public RedHatAMQEventBus(
-            IConnectionFactory connectionFactory,
             ILogger<RedHatAMQEventBus> logger,
             IEventOutboxManager outboxManager,
             IJsonSerializer jsonSerializer,
             IUnitOfWorkManager unitOfWorkManager,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IOptions<RedHatAMQSettings> options)
         {
-            _connectionFactory = connectionFactory;
             _logger = logger;
             _outboxManager = outboxManager;
             _jsonSerializer = jsonSerializer;
-            InitializeConnection();
+            _redhatSettings = options.Value;
             _unitOfWorkManager = unitOfWorkManager;
             _httpContextAccessor = httpContextAccessor;
+            InitializeConnection();
+
         }
 
         private void InitializeConnection()
         {
-            _connection = _connectionFactory.CreateConnection();
-            _connection.Start();
-            _session = _connection.CreateSession(AcknowledgementMode.AutoAcknowledge);
+            
+            // var f = new ConnectionFactory(_redhatSettings.BrokerUri);
+            //_connection = f.CreateConnection(_redhatSettings.UserName,_redhatSettings.Password);
+            //   _connection.Start();
+            //  _session = _connection.CreateSession(AcknowledgementMode.AutoAcknowledge);
         }
 
         public async Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true) where T : class
         {
             if (onUnitOfWorkComplete)
             {
-                // Store in outbox - will be processed after UoW commits
+                // Store in outbox - will be processed after UOW commits
                 await _outboxManager.EnqueueAsync(new OutgoingEventInfo
                     (
                     id: Guid.NewGuid(),
@@ -78,13 +87,30 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
 
         private async Task PublishToRedHatAMQAfterUOWCompleteAsync<T>(T eventData, string queueName = null) where T : class
         {
-            if (_unitOfWorkManager.Current != null) { 
+            if (_unitOfWorkManager.Current != null) {
                 _unitOfWorkManager!.Current!.OnCompleted(async () =>
                 {
-                    await PublishToRedhatAsync(eventData, queueName);
+                    await _publisher.Publish(eventData, ctx =>
+                    {
+                        ctx.Durable = true;
+                        ctx.SetRoutingKey(queueName ?? $"queue.{typeof(T).Name}");
+                        ctx.CorrelationId = GetCorrelationId();
+                    }
+                    );
+
                 });
             }
                 
+        }
+
+        private Guid? GetCorrelationId()
+        {
+            var correlationId=_httpContextAccessor.HttpContext?.Request?.Headers["X-Correlation-Id"].ToString();
+            if (Guid.TryParse(correlationId, out var guid))
+            {
+                return guid;
+            }
+            return null;
         }
 
         private async Task PublishToRedhatAsync<T>(T eventData, string queueName) where T : class

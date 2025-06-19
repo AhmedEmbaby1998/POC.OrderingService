@@ -16,6 +16,8 @@ using Volo.Abp.Studio;
 using POC.Orders;
 using POC.Repositories.Orders;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
+using Volo.Abp.EventBus.Distributed;
+using Volo.Abp.EntityFrameworkCore.DistributedEvents;
 
 namespace POC.EntityFrameworkCore;
 
@@ -44,6 +46,15 @@ public class POCEntityFrameworkCoreModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        Configure<AbpDistributedEventBusOptions>(options =>
+        {
+            options.Outboxes.Configure(config =>
+            {
+                config.UseDbContext<POCDbContext>();
+                config.IsSendingEnabled=true; // Enable sending of outbox messages
+            });
+        });
+
         context.Services.AddAbpDbContext<POCDbContext>(options =>
         {
                 /* Remove "includeAllEntities: true" to create
