@@ -97,7 +97,6 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
                         ctx.CorrelationId = GetCorrelationId();
                     }
                     );
-
                 });
             }
                 

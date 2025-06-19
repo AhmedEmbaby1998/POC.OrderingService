@@ -24,24 +24,24 @@ namespace POC.OrderingService.Infrastructure
             );
             context.Services.AddMassTransit(config =>
             {
-
                 // Add consumers (if using IConsumer<T>)
                 config.UsingActiveMq((context, cfg) =>
                 {
                     var settings = context.GetRequiredService<IOptions<RedHatAMQSettings>>().Value;
-
-                    cfg.Host($"activemq://{settings.BrokerUri}", h =>
+                    cfg.Host(settings.HostName, settings.Port, h =>
                     {
                         h.Username(settings.UserName);
                         h.Password(settings.Password);
                     });
                 });
+                context.Services.AddScoped<IDistributedEventBus, RedHatAMQEventBus>();
+                context.Services.AddScoped<IEventOutboxManager, EventOutOfBoxManager>();
+
             });
-            context.Services.AddScoped<IDistributedEventBus, RedHatAMQEventBus >();
-            context.Services.AddScoped<IEventOutboxManager, EventOutOfBoxManager>();
+
+
 
         }
-
       
     }
 }
