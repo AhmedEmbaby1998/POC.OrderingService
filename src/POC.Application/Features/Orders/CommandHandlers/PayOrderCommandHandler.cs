@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MediatR;
 using POC.Orders;
 using POC.Orders.Commands;
+using POC.Orders.IntegrationEvents;
 using POC.Shared.ValueObjects;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Uow;
@@ -20,7 +21,6 @@ namespace POC.Features.Orders.CommandHandlers
             _distributedEventBus = distributedEventBus;
         }
 
-        public record OrderPaidETo(Guid OrderId, Money TotalPrice);
 
         [UnitOfWork]
         public async Task<Guid> Handle(PayOrderCommand request, CancellationToken cancellationToken)

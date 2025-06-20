@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Amqp.Handler;
 using Apache.NMS;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using POC.OrderingService.Infrastructure.ActiveMq;
 using Volo.Abp;
+using Volo.Abp.Data;
 using Volo.Abp.EventBus;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Json;
@@ -22,16 +25,17 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
 {
     public record MyEvent99(string Message);
 
-    internal class RedHatAMQEventBus : IDistributedEventBus
+    internal class RedHatAMQEventBus : IDistributedEventBus, ISupportsEventBoxes
     {
         private readonly static ConcurrentDictionary<string, IMessageConsumer> _consumers ;
+        private readonly static string QUEUE_NAME_PREFIX = "ordering.";
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<RedHatAMQEventBus> _logger;
         private readonly IEventOutboxManager _outboxManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private  IConnection _connection;
-        private  Apache.NMS.ISession _session;
+        private IConnection _connection;
+        private Apache.NMS.ISession _session;
         private readonly RedHatAMQSettings _redhatSettings;
         private readonly IPublishEndpoint _publisher;
         static RedHatAMQEventBus()
@@ -90,16 +94,22 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
             if (_unitOfWorkManager.Current != null) {
                 _unitOfWorkManager!.Current!.OnCompleted(async () =>
                 {
-                    await _publisher.Publish(eventData, ctx =>
-                    {
-                        ctx.Durable = true;
-                        ctx.SetRoutingKey(queueName ?? $"queue.{typeof(T).Name}");
-                        ctx.CorrelationId = GetCorrelationId();
-                    }
-                    );
+                    await PublishMessage0(eventData, queueName);
                 });
             }
                 
+        }
+
+        private async Task PublishMessage0<T>(T eventData, string queueName) where T : class 
+        {
+            await _publisher.Publish(eventData, ctx =>
+            {
+                ctx.Durable = true;
+                //it will publish to a Topic so it will not be End to End.
+                ctx.SetRoutingKey(queueName ?? $"{QUEUE_NAME_PREFIX}{typeof(T).Name}");
+                ctx.CorrelationId = GetCorrelationId();
+            }
+            );
         }
 
         private Guid? GetCorrelationId()
@@ -138,16 +148,20 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
             }
         }
 
-        // Other IDistributedEventBus methods...
+        // Other IDistributedEventBus methods
         public Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true, bool useOutbox = true) where T : class
         {
             if(useOutbox && onUnitOfWorkComplete)
             {
-                return _outboxManager.EnqueueAsync(new OutgoingEventInfo(
+                var outGoingEvent = new OutgoingEventInfo(
                     id: Guid.NewGuid(),
-                    eventName: typeof(T).Name,
+                    eventName: typeof(T).GetFullNameWithAssemblyName(),
                     eventData: _jsonSerializer.Serialize(eventData).GetBytes(),
-                    creationTime: DateTime.UtcNow));
+                    creationTime: DateTime.UtcNow); 
+
+                outGoingEvent.SetCorrelationId(GetCorrelationId()?.ToString() ?? string.Empty);
+
+                return _outboxManager.EnqueueAsync(outGoingEvent);
             }
 
             return PublishToRedHatAMQAfterUOWCompleteAsync(eventData);
@@ -319,6 +333,58 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
         public void UnsubscribeAll(Type eventType)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task PublishFromOutboxAsync(OutgoingEventInfo outgoingEvent, OutboxConfig outboxConfig)
+        {
+            ArgumentNullException.ThrowIfNull(outgoingEvent);
+            ArgumentNullException.ThrowIfNull(outboxConfig);
+
+            // Deserialize the event data
+            var @event = DeserializeEvent(outgoingEvent.EventName, Encoding.UTF32.GetString(outgoingEvent.EventData));
+
+            ArgumentNullException.ThrowIfNull(@event);
+
+            await this.PublishMessage0(
+                eventData: @event
+                ,
+                queueName: outgoingEvent.EventName.GetTopicName()
+            );
+        }
+
+        public async Task PublishManyFromOutboxAsync(IEnumerable<OutgoingEventInfo> outgoingEvents, OutboxConfig outboxConfig)
+        {
+            foreach (var outgoingEvent in outgoingEvents)
+            {
+                await PublishFromOutboxAsync(outgoingEvent, outboxConfig);
+            }
+        }
+        public async Task ProcessFromInboxAsync(IncomingEventInfo incomingEvent, InboxConfig inboxConfig)
+        {
+            throw new NotImplementedByDesignException("We does not support InBox Pattern Yet!");
+        }
+        private static string HexToString(string hexString)
+        {
+            if (hexString.StartsWith("0x"))
+                hexString = hexString.Substring(2);
+
+            byte[] bytes = new byte[hexString.Length / 2];
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
+            }
+            return Encoding.UTF8.GetString(bytes);
+        }
+        private static object? DeserializeEvent(string eventType, string hexEventData)
+        {
+            // Get the type from the assembly
+            Type type = Type.GetType(eventType) ?? throw new InvalidOperationException($"Type {eventType} not found");
+
+            // Convert hex to JSON string
+            string jsonString = HexToString(hexEventData);
+
+            // Deserialize the JSON to the specified type
+            return JsonSerializer.Deserialize(jsonString, type);
         }
     }
 
