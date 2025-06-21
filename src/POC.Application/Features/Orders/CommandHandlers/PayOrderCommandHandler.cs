@@ -28,7 +28,7 @@ namespace POC.Features.Orders.CommandHandlers
             var order = await _orderRepository.GetAsync(OrderId.New(request.Id));
             order.Pay(request.TotalPrice);
             await _orderRepository.SaveAsync(order, cancellationToken);
-            await _distributedEventBus.PublishAsync(eventData: new OrderPaidETo110(order.Id.Value, order.TotalPrice), onUnitOfWorkComplete: true, useOutbox: true);
+            await _distributedEventBus.PublishAsync(eventData: new OrderPaidETo66(order.Id.Value, order.TotalPrice), onUnitOfWorkComplete: true, useOutbox: true);
             return order.Id.Value;
         }
     }

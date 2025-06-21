@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.Concurrent;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Amqp.Handler;
 using Apache.NMS;
-using Apache.NMS.ActiveMQ;
+using Apache.NMS.AMQP;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -26,7 +18,7 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
 {
     internal class RedHatAMQEventBus : IDistributedEventBus, ISupportsEventBoxes
     {
-        private readonly static ConcurrentDictionary<string, IMessageConsumer> _consumers ;
+        private readonly static ConcurrentDictionary<string, IMessageConsumer> _consumers;
         private readonly static string QUEUE_NAME_PREFIX = "ordering.";
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -38,8 +30,8 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
         private readonly RedHatAMQSettings _redhatSettings;
         private readonly IPublishEndpoint _publisher;
         static RedHatAMQEventBus()
-        { 
-            _consumers = new ConcurrentDictionary<string, IMessageConsumer>(); 
+        {
+            _consumers = new ConcurrentDictionary<string, IMessageConsumer>();
         }
         public RedHatAMQEventBus(
             ILogger<RedHatAMQEventBus> logger,
@@ -56,52 +48,44 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
             _redhatSettings = options.Value;
             _unitOfWorkManager = unitOfWorkManager;
             _httpContextAccessor = httpContextAccessor;
-            _publisher =publisher;
-            InitializeConnection();
-
+            _publisher = publisher;
         }
 
-        private void InitializeConnection()
+        public Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true) where T : class
         {
-            
-            // var f = new ConnectionFactory(_redhatSettings.BrokerUri);
-            //_connection = f.CreateConnection(_redhatSettings.UserName,_redhatSettings.Password);
-            //   _connection.Start();
-            //  _session = _connection.CreateSession(AcknowledgementMode.AutoAcknowledge);
+            if (onUnitOfWorkComplete && _unitOfWorkManager.Current is { } currentUow)
+            {
+                currentUow.OnCompleted(() => SaveToOutOfBox(eventData));
+                return Task.CompletedTask;
+            }
+
+            return SaveToOutOfBox(eventData);
         }
 
-        public async Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true) where T : class
+
+        private async Task SaveToOutOfBox<T>(T eventData) where T : class
         {
-            if (onUnitOfWorkComplete)
-            {
-                // Store in outbox - will be processed after UOW commits
-                await _outboxManager.EnqueueAsync(new OutgoingEventInfo
-                    (
-                    id: Guid.NewGuid(),
-                    eventName: typeof(T).Name,
-                    eventData: _jsonSerializer.Serialize(eventData).GetBytes(),
-                    creationTime: DateTime.UtcNow)
-                    );
-            }
-            else
-            {
-                // Publish immediately
-                await PublishToRedHatAMQAfterUOWCompleteAsync(eventData,eventData.GetTopicName());
-            }
+            await _outboxManager.EnqueueAsync(new OutgoingEventInfo
+                (
+                id: Guid.NewGuid(),
+                eventName: typeof(T).Name,
+                eventData: _jsonSerializer.Serialize(eventData).GetBytes(),
+                creationTime: DateTime.UtcNow)
+                );
         }
 
-        private async Task PublishToRedHatAMQAfterUOWCompleteAsync<T>(T eventData, string queueName) where T : class
+        private async Task PublishToRedHatAMQOnUOWCompleteAsync<T>(T eventData) where T : class
         {
             if (_unitOfWorkManager.Current != null) {
                 _unitOfWorkManager!.Current!.OnCompleted(async () =>
                 {
-                    await PublishMessage0(eventData, queueName);
+                    await PublishMessage0(eventData);
                 });
             }
-                
+
         }
 
-        private async Task PublishMessage0<T>(T eventData, string queueName) where T : class 
+        private async Task PublishMessage0<T>(T eventData) where T : class
         {
             await _publisher.Publish(eventData, ctx =>
             {
@@ -114,7 +98,7 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
 
         private Guid? GetCorrelationId()
         {
-            var correlationId=_httpContextAccessor.HttpContext?.Request?.Headers["X-Correlation-Id"].ToString();
+            var correlationId = _httpContextAccessor.HttpContext?.Request?.Headers["X-Correlation-Id"].ToString();
             if (Guid.TryParse(correlationId, out var guid))
             {
                 return guid;
@@ -123,26 +107,32 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
         }
 
 
-        // Other IDistributedEventBus methods
         public Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true, bool useOutbox = true) where T : class
         {
-            if(useOutbox && onUnitOfWorkComplete)
+            if (useOutbox)
             {
                 var outGoingEvent = new OutgoingEventInfo(
                     id: Guid.NewGuid(),
                     eventName: typeof(T).GetFullNameWithAssemblyName(),
                     eventData: _jsonSerializer.Serialize(eventData).GetBytes(),
-                    creationTime: DateTime.UtcNow); 
+                    creationTime: DateTime.UtcNow);
 
                 outGoingEvent.SetCorrelationId(GetCorrelationId()?.ToString() ?? string.Empty);
 
                 return _outboxManager.EnqueueAsync(outGoingEvent);
             }
+            else if (onUnitOfWorkComplete)
+            {
+                return PublishToRedHatAMQOnUOWCompleteAsync(eventData);
 
-            return PublishToRedHatAMQAfterUOWCompleteAsync(eventData,eventData.GetTopicName());
+            }
+            else
+            {
+                return PublishMessage0(eventData);
+            }
         }
 
-       
+
 
         public void Dispose()
         {
@@ -152,162 +142,87 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
 
         public Task PublishAsync(Type eventType, object eventData, bool onUnitOfWorkComplete = true, bool useOutbox = true)
         {
-            if (useOutbox && onUnitOfWorkComplete)
-            {
-                var method = typeof(RedHatAMQEventBus)
-                .GetMethod(nameof(PublishAsync), [eventType, typeof(bool)]);
+            var method = typeof(RedHatAMQEventBus)
+                .GetMethod(nameof(PublishAsync), [eventType, typeof(bool), typeof(bool)])
+                ?? throw new InvalidOperationException($"Could not find generic method PublishAsync<{eventType.Name}>");
 
-                var genericMethod = method?.MakeGenericMethod(eventType);
-                return (Task)genericMethod?.Invoke(this, [eventData, onUnitOfWorkComplete]);
-            }
+            var genericMethod = method.MakeGenericMethod(eventType);
 
-            return PublishToRedHatAMQAfterUOWCompleteAsync(eventData, eventData.GetTopicName());
-
+            return (Task)genericMethod.Invoke(this, [eventData, onUnitOfWorkComplete, useOutbox]);
         }
 
-        public async Task PublishAsync(Type eventType, object eventData, bool onUnitOfWorkComplete = true)
+
+        public Task PublishAsync(Type eventType, object eventData, bool onUnitOfWorkComplete = true)
         {
-             await PublishAsync(eventType, eventData, onUnitOfWorkComplete, useOutbox: true);
+            return PublishAsync(eventType, eventData, onUnitOfWorkComplete, useOutbox: true);
         }
+
 
         public IDisposable Subscribe<TEvent, THandler>()
          where TEvent : class
          where THandler : IEventHandler, new()
         {
-            var handler = new THandler();
-
-            if (handler is IDistributedEventHandler<TEvent> distributedHandler)
-            {
-                return Subscribe(distributedHandler);
-            }
-
-            throw new ArgumentException($"Handler {typeof(THandler)} must implement IDistributedEventHandler<{typeof(TEvent)}>");
+            throw new NotImplementedByDesignException();
         }
 
         public IDisposable Subscribe<T>(IDistributedEventHandler<T> handler) where T : class
         {
-            // Implementation for subscribing to events
-            var eventName = typeof(T).Name;
-            if(_consumers.ContainsKey(eventName))
-            {
-                _logger.LogWarning("Consumer for event {EventType} already exists. Reuse existing consumer.", eventName);
-                return new DisposeAction(() => { });
-            }
-            var queue = _session.GetQueue($"queue.{eventName}");
-            var consumer = _session.CreateConsumer(queue);
-
-            consumer.Listener += async message =>
-            {
-                if (message is ITextMessage textMessage)
-                {
-                    try
-                    {
-                        var eventData = _jsonSerializer.Deserialize<T>(textMessage.Text);
-                        await handler.HandleEventAsync(eventData);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error handling event {EventType}", eventName);
-                    }
-                }
-            };
-
-            _consumers.TryAdd(eventName, consumer);
-            _logger.LogInformation("Subscribed to event {EventType} with consumer {ConsumerId}", eventName, consumer.ToString());
-            return new DisposeAction(consumer.Close);
+            throw new NotImplementedByDesignException();
         }
 
         public IDisposable Subscribe<T>(Func<T, Task> handler) where T : class
         {
-            return Subscribe(new FuncEventHandler<T>(handler));
+            throw new NotImplementedByDesignException();
         }
         public IDisposable Subscribe(Type eventType, IEventHandler handler)
         {
-            var method = typeof(RedHatAMQEventBus)
-                .GetMethod(nameof(Subscribe), new[] { typeof(IDistributedEventHandler<>).MakeGenericType(eventType) });
-
-            return method == null
-                ? throw new InvalidOperationException($"No suitable Subscribe method found for type {eventType.Name}")
-                : (IDisposable)method.Invoke(this, [handler]);
+            throw new NotImplementedByDesignException();
         }
 
         public IDisposable Subscribe<TEvent>(IEventHandlerFactory factory) where TEvent : class
         {
-            var handler = factory.GetHandler();
-            if (handler is IDistributedEventHandler<TEvent> distributedHandler)
-            {
-                return Subscribe(distributedHandler);
-            }
-
-            throw new ArgumentException($"Handler {handler.GetType()} must implement IDistributedEventHandler<{typeof(TEvent)}>");
+            throw new NotImplementedByDesignException();
         }
 
         public IDisposable Subscribe(Type eventType, IEventHandlerFactory factory)
         {
-            var handler = factory.GetHandler();
-            return Subscribe(eventType, handler: (IEventHandler)handler);
-        }
+            throw new NotImplementedByDesignException();
 
-        private async Task UnsubscribeInternalAsync(string queueName)
-        {
-            if (_consumers.TryGetValue(queueName, out var consumer))
-            {
-                try
-                {
-                    await consumer.CloseAsync();
-                    consumer.Dispose();
-                    _logger.LogInformation("Unsubscribed from RedHatAMQ queue {Queue}", queueName);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error while unsubscribing from {Queue}", queueName);
-                }
-
-                _consumers.Remove(queueName, out _);
-            }
-            else
-                _logger.LogError("already unsubscribed to {QueueName}",queueName);
-            
         }
 
         public async void Unsubscribe<TEvent>(Func<TEvent, Task> action) where TEvent : class
         {
-            var eventName = typeof(TEvent).Name;
-            await UnsubscribeInternalAsync(eventName);
+            throw new NotImplementedByDesignException();
         }
 
         public void Unsubscribe<TEvent>(ILocalEventHandler<TEvent> handler) where TEvent : class
         {
-            var eventName = typeof(TEvent).Name;
-            UnsubscribeInternalAsync(eventName).GetAwaiter().GetResult();
+            throw new NotImplementedByDesignException();
         }
 
         public void Unsubscribe(Type eventType, IEventHandler handler)
         {
-            var eventName = eventType.Name;
-            UnsubscribeInternalAsync(eventName).GetAwaiter().GetResult();
+            throw new NotImplementedByDesignException();
         }
 
         public void Unsubscribe<TEvent>(IEventHandlerFactory factory) where TEvent : class
         {
-            var eventName = typeof(TEvent).Name;
-            UnsubscribeInternalAsync(eventName).GetAwaiter().GetResult();
+            throw new NotImplementedByDesignException();
         }
 
         public void Unsubscribe(Type eventType, IEventHandlerFactory factory)
         {
-            var eventName = eventType.Name;
-            UnsubscribeInternalAsync(eventName).GetAwaiter().GetResult();
+            throw new NotImplementedByDesignException();
         }
 
         public void UnsubscribeAll<TEvent>() where TEvent : class
         {
-            throw new NotImplementedException();
+            throw new NotImplementedByDesignException();
         }
 
         public void UnsubscribeAll(Type eventType)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedByDesignException();
         }
 
         public async Task PublishFromOutboxAsync(OutgoingEventInfo outgoingEvent, OutboxConfig outboxConfig)
@@ -321,8 +236,6 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
 
             await this.PublishMessage0(
                 eventData: (dynamic)@event
-                ,
-                queueName: outgoingEvent.EventName.GetTopicName()
             );
         }
 
@@ -356,24 +269,11 @@ namespace POC.OrderingService.Infrastructure.RedHatAMQ
             //convert byte array to string
             var eventStr = Encoding.UTF8.GetString(byteEventData);
             // Deserialize the JSON to the specified type
-            var @event= this._jsonSerializer.Deserialize(type, eventStr,false);
+            var @event = this._jsonSerializer.Deserialize(type, eventStr, false);
             return @event;
         }
     }
 
-    // Helper class for function-based event handlers
-    public class FuncEventHandler<T> : IDistributedEventHandler<T> where T : class
-    {
-        private readonly Func<T, Task> _handler;
 
-        public FuncEventHandler(Func<T, Task> handler)
-        {
-            _handler = handler;
-        }
 
-        public Task HandleEventAsync(T eventData)
-        {
-            return _handler(eventData);
-        }
-    }
 }

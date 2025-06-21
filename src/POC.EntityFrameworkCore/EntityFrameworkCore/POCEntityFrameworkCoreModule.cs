@@ -57,9 +57,7 @@ public class POCEntityFrameworkCoreModule : AbpModule
 
         context.Services.AddAbpDbContext<POCDbContext>(options =>
         {
-                /* Remove "includeAllEntities: true" to create
-                 * default repositories only for aggregate roots */
-            options.AddDefaultRepositories(includeAllEntities: true);
+            options.AddDefaultRepositories(includeAllEntities: false);//only create repositories for aggreagate roots
         });
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)

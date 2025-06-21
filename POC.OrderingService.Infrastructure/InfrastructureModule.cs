@@ -38,9 +38,6 @@ namespace POC.OrderingService.Infrastructure
                 context.Services.AddScoped<IEventOutboxManager, EventOutOfBoxManager>();
 
             });
-
-
-
         }
       
     }
