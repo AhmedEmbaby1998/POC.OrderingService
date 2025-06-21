@@ -4,6 +4,5 @@ using Volo.Abp.EventBus;
 
 namespace POC.Orders.IntegrationEvents
 {
-    [EventName("OrderPaid")]
-    public record OrderPaidETo66(Guid OrderId, Money TotalPrice);
+    public record OrderPaidETo(Guid OrderId, Money TotalPrice);
 }
