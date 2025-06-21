@@ -18,6 +18,7 @@ using POC.Repositories.Orders;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.EntityFrameworkCore.DistributedEvents;
+using Microsoft.Extensions.Configuration;
 
 namespace POC.EntityFrameworkCore;
 
