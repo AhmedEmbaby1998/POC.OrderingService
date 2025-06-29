@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Apache.NMS;
+using Apache.NMS.ActiveMQ;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using POC.OrderingService.Infrastructure.ActiveMq;
+using POC.OrderingService.Infrastructure.OutOfBox;
+using POC.OrderingService.Infrastructure.RedHatAMQ;
 using Volo.Abp;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Modularity;
@@ -18,33 +18,27 @@ namespace POC.OrderingService.Infrastructure
     {
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            var configuration = context.Services.GetConfiguration();
-            Configure<ActiveMQSettings>(
-                context.Services.GetConfiguration().GetSection("ActiveMQ")
+            //Configure RedHatAMQ Settings
+            Configure<RedHatAMQSettings>(
+                context.Services.GetConfiguration().GetSection("RedHatAMQ")
             );
-            context.Services.AddMassTransit(ActiveMqConfig(configuration));
-            context.Services.AddScoped<IPublisher, ActiveMqPublisher>();
-
-        }
-
-        private static Action<IBusRegistrationConfigurator> ActiveMqConfig(IConfiguration configuration)
-        {
-            return x =>
+            context.Services.AddMassTransit(config =>
             {
-                x.UsingActiveMq((ctx, cfg) =>
+                // Add consumers (if using IConsumer<T>)
+                config.UsingActiveMq((context, cfg) =>
                 {
-                    cfg.Host(configuration["ActiveMQ:Host"], h =>
+                    var settings = context.GetRequiredService<IOptions<RedHatAMQSettings>>().Value;
+                    cfg.Host(settings.HostName, settings.Port, h =>
                     {
-                        h.Username(configuration["ActiveMQ:Username"]);
-                        h.Password(configuration["ActiveMQ:Password"]);
-
+                        h.Username(settings.UserName);
+                        h.Password(settings.Password);
                     });
-
-                    // Configure endpoints
-                    cfg.ConfigureEndpoints(ctx);
                 });
+                context.Services.AddScoped<IDistributedEventBus, RedHatAMQEventBus>();
+                context.Services.AddScoped<IEventOutboxManager, EventOutOfBoxManager>();
 
-            };
+            });
         }
+      
     }
 }

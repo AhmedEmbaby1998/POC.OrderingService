@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using POC.Orders.Commands;
 using POC.Orders.Query;
+using Volo.Abp.Tracing;
 
 namespace POC.Controllers
 {
@@ -15,7 +17,6 @@ namespace POC.Controllers
     public class OrderController: POCController
     {
         private readonly IMediator _meditor;
-
         public OrderController(IMediator meditor)
         {
             _meditor = meditor;

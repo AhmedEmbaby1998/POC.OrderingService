@@ -4,21 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using POC.Shared.ValueObjects;
+using Volo.Abp.EventBus;
 
 namespace POC.Orders.IntegrationEvents
 {
-    public record class OrderCreatedEvent
+    [EventName("OrderCreated")]
+    public record class OrderCreatedETO
     {
         public Guid OrderId { get; set; }
         public string CustomerName { get; set; }
         public Address Address { get; set; }
         public DateOnly? DeliveryDate { set; get; }
         public Money TotalPrice { get; set; }
-        public IEnumerable<OrderItemCreatedEvent> Items { get; set; } = new List<OrderItemCreatedEvent>();
+        public IEnumerable<OrderItemCreatedETO> Items { get; set; } = new List<OrderItemCreatedETO>();
     }
 
 
-    public record class OrderItemCreatedEvent
+    public record class OrderItemCreatedETO
     {
         public Guid OrderId { get; set; }
         public string ProductName { get; set; }

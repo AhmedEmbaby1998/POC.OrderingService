@@ -20,6 +20,8 @@ namespace POC.EntitiesConfiguration
             builder.Property(a => a.EventData).IsRequired();
             builder.Property(a => a.CreatedAt).IsRequired();
             builder.Property(a => a.AggregateId).IsRequired();
+            builder.Property(a => a.CorrelationId).HasMaxLength(50);
+            builder.Property(a => a.UserId).HasMaxLength(50);
         }
     }
 }

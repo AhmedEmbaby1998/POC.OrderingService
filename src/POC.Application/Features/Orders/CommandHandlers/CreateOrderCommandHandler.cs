@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediatR;
 using POC.Orders;
 using POC.Orders.Commands;
+using Volo.Abp.Tracing;
 using Volo.Abp.Uow;
 
 namespace POC.Features.Orders.CommandHandlers

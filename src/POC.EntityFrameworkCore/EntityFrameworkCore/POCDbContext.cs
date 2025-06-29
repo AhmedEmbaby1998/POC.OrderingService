@@ -59,7 +59,7 @@ public class POCDbContext :
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
     public DbSet<StoredEvent> StoredEvents { get; set; }
-    public DbSet<OutgoingEventRecord> OutgoingEvents { set; get; }
+    public DbSet<Volo.Abp.EntityFrameworkCore.DistributedEvents.OutgoingEventRecord> OutgoingEvents { set; get; }
 
 
     #endregion
@@ -85,7 +85,8 @@ public class POCDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
-       
+        builder.ConfigureEventOutbox();
+
         builder.ApplyConfigurationsFromAssembly(typeof(POCDbContext).Assembly);
         /* Configure your own tables/entities inside here */
 
