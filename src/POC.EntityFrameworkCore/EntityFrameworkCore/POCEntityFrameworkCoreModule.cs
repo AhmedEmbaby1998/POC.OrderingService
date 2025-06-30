@@ -52,7 +52,7 @@ public class POCEntityFrameworkCoreModule : AbpModule
             options.Outboxes.Configure(config =>
             {
                 config.UseDbContext<POCDbContext>();
-                config.IsSendingEnabled=true; // Enable sending of outbox messages
+                config.IsSendingEnabled=context.Configuration.GetValue<bool>("OutOfBox:Enable");
             });
         });
 
