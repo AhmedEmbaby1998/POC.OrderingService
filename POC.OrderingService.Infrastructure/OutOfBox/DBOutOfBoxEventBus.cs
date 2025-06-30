@@ -5,6 +5,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using POC.OrderingService.Infrastructure.Abstractions;
 using POC.OrderingService.Infrastructure.ActiveMq;
 using Volo.Abp;
 using Volo.Abp.Data;
@@ -13,24 +14,25 @@ using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Json;
 using Volo.Abp.Uow;
 
-namespace POC.OrderingService.Infrastructure.RedHatAMQ;
+namespace POC.OrderingService.Infrastructure.OutOfBox;
 
-internal class RedHatAMQEventBus : IDistributedEventBus, ISupportsEventBoxes
+internal class DBOutOfBoxEventBus : IDistributedEventBus, ISupportsEventBoxes
 {
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<RedHatAMQEventBus> _logger;
+    private readonly ILogger<DBOutOfBoxEventBus> _logger;
     private readonly IEventOutboxManager _outboxManager;
     private readonly IJsonSerializer _jsonSerializer;
-    private readonly IPublishEndpoint _publisher;
+    private readonly IMessageBrokerPublisher _publisher;
 
-    public RedHatAMQEventBus(
-        ILogger<RedHatAMQEventBus> logger,
+    public DBOutOfBoxEventBus(
+        ILogger<DBOutOfBoxEventBus> logger,
         IEventOutboxManager outboxManager,
         IJsonSerializer jsonSerializer,
         IUnitOfWorkManager unitOfWorkManager,
-        IHttpContextAccessor httpContextAccessor,
-        IPublishEndpoint publisher)
+        IHttpContextAccessor httpContextAccessor
+,
+        IMessageBrokerPublisher publisher)
     {
         _logger = logger;
         _outboxManager = outboxManager;
@@ -42,18 +44,17 @@ internal class RedHatAMQEventBus : IDistributedEventBus, ISupportsEventBoxes
 
     // -------------------- Publish --------------------
 
-    public Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true, bool useOutbox = true) where T : class
+    public async Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true, bool useOutbox = true) where T : class
     {
         if (useOutbox)
-            return EnqueueToOutbox(eventData);
+            await EnqueueToOutbox(eventData);
 
         if (onUnitOfWorkComplete && _unitOfWorkManager.Current is { } uow)
         {
-            uow.OnCompleted(() => PublishToBroker(eventData));
-            return Task.CompletedTask;
+            uow.OnCompleted(async () => await _publisher.PublishAsync(eventData));
         }
 
-        return PublishToBroker(eventData);
+        await _publisher.PublishAsync(eventData);
     }
 
     public Task PublishAsync<T>(T eventData, bool onUnitOfWorkComplete = true) where T : class =>
@@ -61,7 +62,7 @@ internal class RedHatAMQEventBus : IDistributedEventBus, ISupportsEventBoxes
 
     public Task PublishAsync(Type eventType, object eventData, bool onUnitOfWorkComplete = true, bool useOutbox = true)
     {
-        var method = typeof(RedHatAMQEventBus)
+        var method = typeof(DBOutOfBoxEventBus)
             .GetMethods()
             .FirstOrDefault(m =>
                 m.Name == nameof(PublishAsync) &&
@@ -127,16 +128,22 @@ internal class RedHatAMQEventBus : IDistributedEventBus, ISupportsEventBoxes
         ArgumentNullException.ThrowIfNull(outgoingEvent);
         ArgumentNullException.ThrowIfNull(outboxConfig);
 
-        var @event = DeserializeEvent(outgoingEvent.EventName, outgoingEvent.EventData)
+        if (outboxConfig.IsSendingEnabled)
+        {
+            var @event = DeserializeEvent(outgoingEvent.EventName, outgoingEvent.EventData)
             ?? throw new InvalidOperationException("Deserialization returned null");
 
-        await PublishToBroker((dynamic)@event);
+            await _publisher.PublishAsync((dynamic)@event);
+        }
     }
     public async Task PublishManyFromOutboxAsync(IEnumerable<OutgoingEventInfo> events, OutboxConfig config)
     {
-        foreach (var e in events)
+        if (config.IsSendingEnabled)
         {
-            await PublishFromOutboxAsync(e, config);
+            foreach (var e in events)
+            {
+                await PublishFromOutboxAsync(e, config);
+            }
         }
     }
     public Task ProcessFromInboxAsync(IncomingEventInfo incomingEvent, InboxConfig inboxConfig) =>
@@ -155,22 +162,17 @@ internal class RedHatAMQEventBus : IDistributedEventBus, ISupportsEventBoxes
 
         return _outboxManager.EnqueueAsync(@event);
     }
-    private Task PublishToBroker<T>(T eventData) where T : class =>
-        _publisher.Publish(eventData, ctx =>
-        {
-            ctx.Durable = true;
-            ctx.CorrelationId = GetCorrelationId();
-        });
+
+    private Guid? GetCorrelationId()
+    {
+        var correlation = _httpContextAccessor.HttpContext?.Request?.Headers["X-Correlation-Id"].ToString();
+        return Guid.TryParse(correlation, out var guid) ? guid : null;
+    }
     private object? DeserializeEvent(string eventType, byte[] eventBytes)
     {
         var type = Type.GetType(eventType) ?? throw new InvalidOperationException($"Type {eventType} not found.");
         var json = Encoding.UTF8.GetString(eventBytes);
         return _jsonSerializer.Deserialize(type, json, false);
-    }
-    private Guid? GetCorrelationId()
-    {
-        var correlation = _httpContextAccessor.HttpContext?.Request?.Headers["X-Correlation-Id"].ToString();
-        return Guid.TryParse(correlation, out var guid) ? guid : null;
     }
     #endregion Private Helpers
 }

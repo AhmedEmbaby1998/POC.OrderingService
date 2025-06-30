@@ -47,18 +47,21 @@ public class POCEntityFrameworkCoreModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        Configure<AbpDistributedEventBusOptions>(options =>
+        if (context.Configuration.GetValue<bool>("FeatureFlags:UseHangFireOutOfBox"))
         {
-            options.Outboxes.Configure(config =>
+            Configure<AbpDistributedEventBusOptions>(options =>
             {
-                config.UseDbContext<POCDbContext>();
-                config.IsSendingEnabled=context.Configuration.GetValue<bool>("OutOfBox:Enable");
+                options.Outboxes.Configure(config =>
+                {
+                    config.UseDbContext<POCDbContext>();
+                    config.IsSendingEnabled = context.Configuration.GetValue<bool>("OutOfBox:Enable");
+                });
             });
-        });
+        }
 
         context.Services.AddAbpDbContext<POCDbContext>(options =>
         {
-            options.AddDefaultRepositories(includeAllEntities: false);//only create repositories for aggreagate roots
+            options.AddDefaultRepositories(includeAllEntities: true);//only create repositories for aggreagate roots
         });
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)

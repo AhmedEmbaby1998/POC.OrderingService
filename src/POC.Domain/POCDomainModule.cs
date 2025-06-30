@@ -17,6 +17,7 @@ using Volo.Abp.Emailing;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.TenantManagement;
+using Volo.Abp.AspNetCore.Serilog;
 
 namespace POC;
 
@@ -33,7 +34,8 @@ namespace POC;
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
     typeof(AbpTenantManagementDomainModule),
-    typeof(BlobStoringDatabaseDomainModule)
+    typeof(BlobStoringDatabaseDomainModule),
+    typeof(AbpAspNetCoreSerilogModule)
     )]
 public class POCDomainModule : AbpModule
 {
