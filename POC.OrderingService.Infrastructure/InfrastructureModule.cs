@@ -1,5 +1,6 @@
 ﻿using Apache.NMS;
 using Apache.NMS.ActiveMQ;
+using Hangfire;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +39,15 @@ namespace POC.OrderingService.Infrastructure
                 context.Services.AddScoped<IEventOutboxManager, EventOutOfBoxManager>();
 
             });
+            ConfigureHangfire(context, context.Services.GetConfiguration());
         }
-      
+
+        private void ConfigureHangfire(ServiceConfigurationContext context, IConfiguration configuration)
+        {
+            context.Services.AddHangfire(config =>
+            {
+                config.UseSqlServerStorage(configuration.GetConnectionString("Default"));
+            });
+        }
     }
 }
