@@ -278,6 +278,7 @@ public class POCHttpApiHostModule : AbpModule
         });
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
+        app.UseAbpHangfireDashboard();
         app.UseConfiguredEndpoints();
     }
 }
