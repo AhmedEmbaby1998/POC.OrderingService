@@ -10,6 +10,7 @@ using POC.OrderingService.Infrastructure.OutOfBox;
 using POC.OrderingService.Infrastructure.RedHatAMQ;
 using Volo.Abp;
 using Volo.Abp.EventBus.Distributed;
+using Volo.Abp.Hangfire;
 using Volo.Abp.Modularity;
 
 namespace POC.OrderingService.Infrastructure
@@ -44,6 +45,14 @@ namespace POC.OrderingService.Infrastructure
 
         private void ConfigureHangfire(ServiceConfigurationContext context, IConfiguration configuration)
         {
+            Configure<AbpHangfireOptions>(options =>
+            {
+                options.ServerOptions = new BackgroundJobServerOptions
+                {
+                    Queues = ["OutOfBox","Default"],
+                };
+            });
+
             context.Services.AddHangfire(config =>
             {
                 config.UseSqlServerStorage(configuration.GetConnectionString("Default"));
